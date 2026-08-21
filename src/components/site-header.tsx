@@ -4,6 +4,7 @@ import { BrandLogo } from "./brand-logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const nav = [
   { to: "/cruises", label: "Find a cruise" },
@@ -13,6 +14,8 @@ const nav = [
 
 export function SiteHeader() {
   const { user } = useAuth();
+  const { isAdmin } = useIsAdmin();
+
 
   return (
     <header className="sticky top-0 z-40 bg-navy-deep text-navy-foreground">
@@ -30,7 +33,17 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          {isAdmin ? (
+            <Link
+              to="/admin/audit-log"
+              className="text-sm tracking-wide text-navy-foreground/80 transition-colors hover:text-brass"
+              activeProps={{ className: "text-brass" }}
+            >
+              Audit log
+            </Link>
+          ) : null}
         </nav>
+
 
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
@@ -57,9 +70,15 @@ export function SiteHeader() {
                   {item.label}
                 </Link>
               ))}
+              {isAdmin ? (
+                <Link to="/admin/audit-log" className="font-display text-xl">
+                  Audit log
+                </Link>
+              ) : null}
               <Link to={user ? "/account" : "/auth"} className="font-display text-xl text-brass">
                 {user ? "My voyage" : "Sign in"}
               </Link>
+
             </div>
           </SheetContent>
         </Sheet>

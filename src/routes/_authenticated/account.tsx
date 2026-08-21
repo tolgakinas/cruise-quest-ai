@@ -1,6 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Button } from "@/components/ui/button";
+
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -16,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/account")({
 
 function AccountPage() {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-20">
@@ -26,9 +29,17 @@ function AccountPage() {
       <p className="mt-8 text-muted-foreground">
         Your bookings and excursion tickets will appear here.
       </p>
-      <Button variant="outline" className="mt-8" onClick={() => signOut()}>
-        Sign out
-      </Button>
+      <div className="mt-8 flex flex-wrap gap-3">
+        {isAdmin ? (
+          <Button asChild className="bg-brass text-brass-foreground hover:bg-brass-soft">
+            <Link to="/admin/audit-log">Admin audit log</Link>
+          </Button>
+        ) : null}
+        <Button variant="outline" onClick={() => signOut()}>
+          Sign out
+        </Button>
+      </div>
     </div>
   );
 }
+
