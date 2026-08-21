@@ -4,6 +4,7 @@ import { BrandLogo } from "./brand-logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const nav = [
   { to: "/cruises", label: "Find a cruise" },
@@ -13,6 +14,8 @@ const nav = [
 
 export function SiteHeader() {
   const { user } = useAuth();
+  const { isAdmin } = useIsAdmin();
+
 
   return (
     <header className="sticky top-0 z-40 bg-navy-deep text-navy-foreground">
