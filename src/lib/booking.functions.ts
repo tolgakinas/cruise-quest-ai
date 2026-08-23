@@ -217,7 +217,7 @@ export const getMyBooking = createServerFn({ method: "POST" })
     const { data: booking, error } = await context.supabase
       .from("bookings")
       .select(
-        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, lead_passenger_phone, cabin_number, notes, port_call_id, created_at, excursion_id, excursions(id, title, slug, price, currency, capacity, duration_minutes, meeting_point, port_id, ports(name, country, slug)), sailings(name, slug), booking_addons(id, name, quantity, unit_price, line_total, currency)",
+        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, lead_passenger_phone, cabin_number, notes, port_call_id, created_at, excursion_id, excursions(id, title, slug, price, currency, capacity, duration_minutes, meeting_point, port_id, ports(name, country, slug)), sailings(name, slug), booking_addons(id, name, quantity, unit_price, line_total, currency, excursion_addons(per_guest))",
       )
       .eq("reference", data.reference)
       .maybeSingle();
