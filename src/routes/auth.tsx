@@ -117,7 +117,38 @@ function AuthPage() {
         <span className="h-px flex-1 bg-border" /> or email <span className="h-px flex-1 bg-border" />
       </div>
 
+      {mode === "forgot" ? (
+        <form onSubmit={sendReset} className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Enter the email address on your account and we'll send you a secure link to choose a new
+            password.
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="reset-email">Email</Label>
+            <Input
+              id="reset-email"
+              type="email"
+              required
+              autoComplete="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={busy}>
+            Send reset link
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={() => setMode("credentials")}
+          >
+            Back to sign in
+          </Button>
+        </form>
+      ) : (
       <Tabs defaultValue="signin">
+
         <TabsList className="w-full">
           <TabsTrigger value="signin" className="flex-1">
             Sign in
