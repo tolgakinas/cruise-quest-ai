@@ -79,11 +79,32 @@ function CruiseSearchPage() {
     queryFn: () => searchSailings({ data: filters }),
   });
 
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const rows = results.data ?? [];
+
+  useEffect(() => {
+    if (rows.length === 0) {
+      setSelectedSlug(null);
+      return;
+    }
+    if (!selectedSlug || !rows.some((r) => r.slug === selectedSlug)) {
+      setSelectedSlug(rows[0].slug);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results.data]);
+
+  const detail = useQuery({
+    queryKey: ["sailing", selectedSlug],
+    queryFn: () => getSailing({ data: { slug: selectedSlug as string } }),
+    enabled: !!selectedSlug,
+  });
+
   const shipsForLine = (facets.data?.ships ?? []).filter((s) => {
     if (cruiseLine === ANY) return true;
     const line = (facets.data?.cruiseLines ?? []).find((l) => l.slug === cruiseLine);
     return line ? s.cruise_line_id === line.id : true;
   });
+
 
   return (
     <div className="bg-background">
