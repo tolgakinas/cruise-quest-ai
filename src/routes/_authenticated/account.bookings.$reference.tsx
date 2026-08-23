@@ -79,6 +79,14 @@ function ManageBookingPage() {
 
   const closed = booking.status === "cancelled" || booking.status === "refunded";
   const unitPrice = Number(booking.excursions?.price ?? 0);
+  const extras = booking.booking_addons ?? [];
+  const refundRequests = query.data?.refundRequests ?? [];
+  const pendingRefund = refundRequests.find((r) => r.status === "pending");
+  // Per-guest extras follow the guest count; per-booking extras are charged once.
+  const extrasTotalForParty = extras.reduce((sum, extra) => {
+    const perGuest = extra.quantity > 1 || extra.quantity === booking.party_size;
+    return sum + Number(extra.unit_price) * (perGuest ? form.partySize : 1);
+  }, 0);
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
