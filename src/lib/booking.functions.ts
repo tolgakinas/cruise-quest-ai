@@ -80,6 +80,7 @@ const ReserveInput = z.object({
   leadPhone: z.string().trim().max(40).optional().or(z.literal("")),
   cabinNumber: z.string().trim().max(20).optional().or(z.literal("")),
   notes: z.string().trim().max(600).optional().or(z.literal("")),
+  addonIds: z.array(z.string().uuid()).max(10).default([]),
 });
 
 /** Signed in: create a reserved (unpaid) booking. Price and capacity computed server-side. */
@@ -88,6 +89,7 @@ export const reserveExcursion = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ReserveInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
 
     const { data: excursion, error: exErr } = await supabase
       .from("excursions")
