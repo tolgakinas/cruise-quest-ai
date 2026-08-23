@@ -79,6 +79,14 @@ function ManageBookingPage() {
 
   const closed = booking.status === "cancelled" || booking.status === "refunded";
   const unitPrice = Number(booking.excursions?.price ?? 0);
+  const extras = booking.booking_addons ?? [];
+  const refundRequests = query.data?.refundRequests ?? [];
+  const pendingRefund = refundRequests.find((r) => r.status === "pending");
+  // Per-guest extras follow the guest count; per-booking extras are charged once.
+  const extrasTotalForParty = extras.reduce((sum, extra) => {
+    const perGuest = extra.excursion_addons?.per_guest ?? false;
+    return sum + Number(extra.unit_price) * (perGuest ? form.partySize : 1);
+  }, 0);
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
@@ -109,10 +117,14 @@ function ManageBookingPage() {
   async function cancel() {
     setBusy(true);
     try {
-      await cancelMyBooking({ data: { reference } });
+      const result = await cancelMyBooking({ data: { reference } });
       await queryClient.invalidateQueries({ queryKey: ["my-booking", reference] });
       await queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
-      toast.success("Your reservation has been cancelled.");
+      toast.success(
+        result?.refundRequested
+          ? "Reservation cancelled. Your refund request is with our team for review."
+          : "Your reservation has been cancelled.",
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "We couldn't cancel your reservation.");
     } finally {
@@ -173,6 +185,47 @@ function ManageBookingPage() {
         </div>
       ) : null}
 
+      {extras.length ? (
+        <div className="mt-10">
+          <h2 className="font-display text-2xl">Extras on this reservation</h2>
+          <div className="rule-brass mt-4" />
+          <ul className="mt-5 space-y-3 text-sm">
+            {extras.map((extra) => (
+              <li key={extra.id} className="flex justify-between gap-4 border-b border-border pb-3">
+                <span>
+                  {extra.name}
+                  {extra.quantity > 1 ? ` × ${extra.quantity}` : ""}
+                </span>
+                <span>{formatMoney(extra.line_total, extra.currency)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {refundRequests.length ? (
+        <div className="mt-10 rounded-lg border border-brass/40 bg-ivory/60 p-5">
+          <p className="eyebrow text-brass">Refund requests</p>
+          <ul className="mt-4 space-y-3 text-sm">
+            {refundRequests.map((request) => (
+              <li key={request.id} className="flex flex-wrap items-baseline justify-between gap-3">
+                <span>
+                  {formatDate(request.created_at)} ·{" "}
+                  {formatMoney(request.amount ?? booking.total_amount, request.currency)}
+                  {request.admin_note ? ` — ${request.admin_note}` : ""}
+                </span>
+                <Badge variant="outline">{request.status}</Badge>
+              </li>
+            ))}
+          </ul>
+          {pendingRefund ? (
+            <p className="mt-4 text-xs text-muted-foreground">
+              Our reservations team reviews refunds within one business day.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <form onSubmit={save} className="mt-10 space-y-6">
         <div>
           <Label htmlFor="portCallId">Tour date</Label>
@@ -206,7 +259,9 @@ function ManageBookingPage() {
               className="mt-2"
             />
             <p className="mt-2 text-xs text-muted-foreground">
-              New total: {formatMoney(unitPrice * form.partySize, booking.currency)}
+              New total:{" "}
+              {formatMoney(unitPrice * form.partySize + extrasTotalForParty, booking.currency)}
+              {extras.length ? " (extras included)" : ""}
             </p>
           </div>
           <div>

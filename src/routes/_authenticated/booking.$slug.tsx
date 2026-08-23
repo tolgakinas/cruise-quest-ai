@@ -54,10 +54,28 @@ function BookingPage() {
   });
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   const excursion = offer.data?.excursion;
   const date = offer.data?.dates.find((d) => d.portCallId === portCall);
-  const total = excursion ? Number(excursion.price) * party : 0;
+  const addons = offer.data?.addons ?? [];
+  const excursionTotal = excursion ? Number(excursion.price) * party : 0;
+  const addonLines = addons
+    .filter((a) => selectedAddons.includes(a.id))
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      quantity: a.per_guest ? party : 1,
+      total: Number(a.price) * (a.per_guest ? party : 1),
+    }));
+  const addonTotal = addonLines.reduce((sum, l) => sum + l.total, 0);
+  const total = excursionTotal + addonTotal;
+
+  function toggleAddon(id: string) {
+    setSelectedAddons((current) =>
+      current.includes(id) ? current.filter((a) => a !== id) : [...current, id],
+    );
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -74,6 +92,7 @@ function BookingPage() {
           leadPhone: form.leadPhone,
           cabinNumber: form.cabinNumber,
           notes: form.notes,
+          addonIds: selectedAddons,
         },
       });
 
@@ -180,6 +199,53 @@ function BookingPage() {
                     className="mt-2"
                   />
                 </div>
+
+                {addons.length ? (
+                  <div>
+                    <div className="rule-brass mb-6" />
+                    <p className="eyebrow text-brass">Add to your day ashore</p>
+                    <div className="mt-4 space-y-3">
+                      {addons.map((addon) => {
+                        const quantity = addon.per_guest ? party : 1;
+                        const lineTotal = Number(addon.price) * quantity;
+                        const checked = selectedAddons.includes(addon.id);
+                        return (
+                          <label
+                            key={addon.id}
+                            className={`flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-colors ${
+                              checked ? "border-brass bg-brass/10" : "border-border hover:border-brass/50"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleAddon(addon.id)}
+                              className="mt-1 h-4 w-4 accent-brass"
+                            />
+                            <span className="flex-1">
+                              <span className="flex flex-wrap items-baseline justify-between gap-2">
+                                <span className="font-medium">{addon.name}</span>
+                                <span className="font-display">
+                                  {formatMoney(lineTotal, addon.currency)}
+                                </span>
+                              </span>
+                              {addon.description ? (
+                                <span className="mt-1 block text-sm text-muted-foreground">
+                                  {addon.description}
+                                </span>
+                              ) : null}
+                              <span className="mt-1 block text-xs text-muted-foreground">
+                                {addon.per_guest
+                                  ? `${formatMoney(addon.price, addon.currency)} per guest`
+                                  : "Per booking"}
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
                 <Button
                   type="submit"
                   disabled={submitting}
@@ -218,6 +284,24 @@ function BookingPage() {
                   <dt className="text-muted-foreground">Guests</dt>
                   <dd>{party}</dd>
                 </div>
+              </dl>
+              <div className="rule-brass my-5" />
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">
+                    Excursion · {party} guest{party === 1 ? "" : "s"}
+                  </dt>
+                  <dd>{formatMoney(excursionTotal, excursion.currency)}</dd>
+                </div>
+                {addonLines.map((line) => (
+                  <div key={line.id} className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">
+                      {line.name}
+                      {line.quantity > 1 ? ` × ${line.quantity}` : ""}
+                    </dt>
+                    <dd>{formatMoney(line.total, excursion.currency)}</dd>
+                  </div>
+                ))}
               </dl>
               <div className="rule-brass my-5" />
               <div className="flex items-baseline justify-between">

@@ -46,8 +46,16 @@ export const getExcursionOffer = createServerFn({ method: "POST" })
       seatsByDate.set(b.tour_date, (seatsByDate.get(b.tour_date) ?? 0) + b.party_size);
     }
 
+    const { data: addons } = await supabase
+      .from("excursion_addons")
+      .select("id, name, description, price, currency, per_guest, sort_order")
+      .eq("excursion_id", excursion.id)
+      .eq("is_active", true)
+      .order("sort_order");
+
     return {
       excursion,
+      addons: addons ?? [],
       dates: published.map((c) => ({
         portCallId: c.id,
         date: c.call_date,
@@ -72,6 +80,7 @@ const ReserveInput = z.object({
   leadPhone: z.string().trim().max(40).optional().or(z.literal("")),
   cabinNumber: z.string().trim().max(20).optional().or(z.literal("")),
   notes: z.string().trim().max(600).optional().or(z.literal("")),
+  addonIds: z.array(z.string().uuid()).max(10).default([]),
 });
 
 /** Signed in: create a reserved (unpaid) booking. Price and capacity computed server-side. */
@@ -80,6 +89,7 @@ export const reserveExcursion = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ReserveInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
 
     const { data: excursion, error: exErr } = await supabase
       .from("excursions")
@@ -122,7 +132,37 @@ export const reserveExcursion = createServerFn({ method: "POST" })
       );
     }
 
-    const total = Number(excursion.price) * data.partySize;
+    // Add-on prices are always taken from the database, never from the client.
+    const chosenAddons: {
+      addon_id: string;
+      name: string;
+      unit_price: number;
+      quantity: number;
+      line_total: number;
+      currency: string;
+    }[] = [];
+    if (data.addonIds.length) {
+      const { data: addons } = await supabase
+        .from("excursion_addons")
+        .select("id, name, price, currency, per_guest")
+        .eq("excursion_id", excursion.id)
+        .eq("is_active", true)
+        .in("id", [...new Set(data.addonIds)]);
+      for (const addon of addons ?? []) {
+        const quantity = addon.per_guest ? data.partySize : 1;
+        chosenAddons.push({
+          addon_id: addon.id,
+          name: addon.name,
+          unit_price: Number(addon.price),
+          quantity,
+          line_total: Number(addon.price) * quantity,
+          currency: addon.currency,
+        });
+      }
+    }
+
+    const addonTotal = chosenAddons.reduce((sum, a) => sum + a.line_total, 0);
+    const total = Number(excursion.price) * data.partySize + addonTotal;
 
     const { data: booking, error } = await supabase
       .from("bookings")
@@ -146,6 +186,12 @@ export const reserveExcursion = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
+    if (chosenAddons.length) {
+      await supabase
+        .from("booking_addons")
+        .insert(chosenAddons.map((a) => ({ ...a, booking_id: booking.id })));
+    }
+
     return booking;
   });
 
@@ -156,7 +202,7 @@ export const getMyBookings = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("bookings")
       .select(
-        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, cabin_number, created_at, excursions(id, title, slug, duration_minutes, meeting_point, ports(name, country, slug)), sailings(name, slug), payments(status, amount, currency, created_at)",
+        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, cabin_number, created_at, excursions(id, title, slug, duration_minutes, meeting_point, ports(name, country, slug)), sailings(name, slug), payments(status, amount, currency, created_at), booking_addons(id, name, quantity, unit_price, line_total, currency), refund_requests(id, status, created_at)",
       )
       .order("tour_date", { ascending: true });
     if (error) throw new Error(error.message);
@@ -171,27 +217,38 @@ export const getMyBooking = createServerFn({ method: "POST" })
     const { data: booking, error } = await context.supabase
       .from("bookings")
       .select(
-        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, lead_passenger_phone, cabin_number, notes, port_call_id, created_at, excursion_id, excursions(id, title, slug, price, currency, capacity, duration_minutes, meeting_point, port_id, ports(name, country, slug)), sailings(name, slug)",
+        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, lead_passenger_phone, cabin_number, notes, port_call_id, created_at, excursion_id, excursions(id, title, slug, price, currency, capacity, duration_minutes, meeting_point, port_id, ports(name, country, slug)), sailings(name, slug), booking_addons(id, name, quantity, unit_price, line_total, currency, excursion_addons(per_guest))",
       )
       .eq("reference", data.reference)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!booking) return null;
 
-    const { data: history } = await context.supabase
-      .from("booking_modifications")
-      .select("id, field, old_value, new_value, note, created_at")
-      .eq("booking_id", booking.id)
-      .order("created_at", { ascending: false });
+    const [{ data: history }, { data: calls }, { data: refunds }] = await Promise.all([
+      context.supabase
+        .from("booking_modifications")
+        .select("id, field, old_value, new_value, note, created_at")
+        .eq("booking_id", booking.id)
+        .order("created_at", { ascending: false }),
+      context.supabase
+        .from("sailing_port_calls")
+        .select("id, call_date, arrival_time, departure_time, sailings!inner(name, slug)")
+        .eq("port_id", booking.excursions?.port_id ?? "")
+        .gte("call_date", new Date().toISOString().slice(0, 10))
+        .order("call_date"),
+      context.supabase
+        .from("refund_requests")
+        .select("id, status, reason, amount, currency, admin_note, created_at, reviewed_at")
+        .eq("booking_id", booking.id)
+        .order("created_at", { ascending: false }),
+    ]);
 
-    const { data: calls } = await context.supabase
-      .from("sailing_port_calls")
-      .select("id, call_date, arrival_time, departure_time, sailings!inner(name, slug)")
-      .eq("port_id", booking.excursions?.port_id ?? "")
-      .gte("call_date", new Date().toISOString().slice(0, 10))
-      .order("call_date");
-
-    return { booking, history: history ?? [], alternatives: calls ?? [] };
+    return {
+      booking,
+      history: history ?? [],
+      alternatives: calls ?? [],
+      refundRequests: refunds ?? [],
+    };
   });
 
 const ModifyInput = z.object({
@@ -277,7 +334,24 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
       if (used + partySize > capacity) {
         throw new Error(`Only ${Math.max(0, capacity - used)} place(s) left on that date.`);
       }
-      update["total_amount"] = Number(booking.excursions?.price ?? 0) * partySize;
+      // Re-price the extras too: per-guest extras follow the new party size.
+      const { data: bookedAddons } = await supabase
+        .from("booking_addons")
+        .select("id, addon_id, unit_price, excursion_addons(per_guest)")
+        .eq("booking_id", booking.id);
+      let addonTotal = 0;
+      for (const a of bookedAddons ?? []) {
+        const perGuest = a.excursion_addons?.per_guest ?? false;
+        const quantity = perGuest ? partySize : 1;
+        addonTotal += Number(a.unit_price) * quantity;
+        if (perGuest) {
+          await supabase
+            .from("booking_addons")
+            .update({ quantity, line_total: Number(a.unit_price) * quantity })
+            .eq("id", a.id);
+        }
+      }
+      update["total_amount"] = Number(booking.excursions?.price ?? 0) * partySize + addonTotal;
       changes.push({
         field: "total_amount",
         old_value: null,
@@ -319,7 +393,10 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
     return { reference: booking.reference, changed: true };
   });
 
-/** Signed in: cancel my own reservation. */
+/**
+ * Signed in: cancel my own reservation. If it was already paid, the cancellation
+ * raises a refund request that an admin has to approve — no automatic refund.
+ */
 export const cancelMyBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -329,12 +406,14 @@ export const cancelMyBooking = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: booking } = await supabase
       .from("bookings")
-      .select("id, user_id, status")
+      .select("id, user_id, status, total_amount, currency")
       .eq("reference", data.reference)
       .maybeSingle();
     if (!booking) throw new Error("Reservation not found.");
     if (booking.user_id !== userId) throw new Error("You cannot cancel this reservation.");
-    if (booking.status === "cancelled") return { ok: true };
+    if (booking.status === "cancelled") return { ok: true, refundRequested: false };
+
+    const wasPaid = booking.status === "confirmed";
 
     const { error } = await supabase
       .from("bookings")
@@ -351,5 +430,26 @@ export const cancelMyBooking = createServerFn({ method: "POST" })
       note: data.reason ? `Passenger cancellation: ${data.reason}` : "Cancelled by passenger",
     });
 
-    return { ok: true };
+    let refundRequested = false;
+    if (wasPaid) {
+      const { data: pending } = await supabase
+        .from("refund_requests")
+        .select("id")
+        .eq("booking_id", booking.id)
+        .eq("status", "pending")
+        .maybeSingle();
+      if (!pending) {
+        const { error: refundError } = await supabase.from("refund_requests").insert({
+          booking_id: booking.id,
+          user_id: userId,
+          reason: data.reason || null,
+          amount: booking.total_amount,
+          currency: booking.currency,
+        });
+        if (refundError) throw new Error(refundError.message);
+      }
+      refundRequested = true;
+    }
+
+    return { ok: true, refundRequested };
   });
