@@ -4,6 +4,7 @@ import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { Anchor, Clock, MapPin, Ship, TriangleAlert, CheckCircle2 } from "lucide-react";
 import { getSailing } from "@/lib/catalog.functions";
 import { Button } from "@/components/ui/button";
+import { SailingTimeline } from "@/components/sailing-timeline";
 import { FreshnessBanner, FreshnessInline, useRelativeTime } from "@/components/data-freshness";
 import {
   formatDate,
