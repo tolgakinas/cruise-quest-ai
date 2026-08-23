@@ -286,6 +286,24 @@ function BookingPage() {
                 </div>
               </dl>
               <div className="rule-brass my-5" />
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">
+                    Excursion · {party} guest{party === 1 ? "" : "s"}
+                  </dt>
+                  <dd>{formatMoney(excursionTotal, excursion.currency)}</dd>
+                </div>
+                {addonLines.map((line) => (
+                  <div key={line.id} className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">
+                      {line.name}
+                      {line.quantity > 1 ? ` × ${line.quantity}` : ""}
+                    </dt>
+                    <dd>{formatMoney(line.total, excursion.currency)}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="rule-brass my-5" />
               <div className="flex items-baseline justify-between">
                 <span className="text-sm text-muted-foreground">Total due</span>
                 <span className="font-display text-2xl">
