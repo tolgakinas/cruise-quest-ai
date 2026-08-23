@@ -43,7 +43,7 @@ function BookingsPage() {
         <div className="mt-10">
           <p className="text-muted-foreground">You haven't booked a shore excursion yet.</p>
           <Button asChild className="mt-6 bg-brass text-brass-foreground hover:bg-brass-soft">
-            <Link to="/cruises">Find your cruise</Link>
+            <Link to="/cruises" search={{}}>Find your cruise</Link>
           </Button>
         </div>
       ) : (

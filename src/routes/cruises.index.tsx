@@ -15,6 +15,16 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/cruises/")({
+  validateSearch: (search?: Record<string, unknown>): {
+    line?: string | undefined;
+    ship?: string | undefined;
+    port?: string | undefined;
+    from?: string | undefined;
+  } => {
+    const s = search ?? {};
+    const str = (key: string) => (typeof s[key] === "string" ? (s[key] as string) : undefined);
+    return { line: str("line"), ship: str("ship"), port: str("port"), from: str("from") };
+  },
   head: () => ({
     meta: [
       { title: "Find Your Cruise — Shore Hopper" },
@@ -36,11 +46,12 @@ export const Route = createFileRoute("/cruises/")({
 const ANY = "__any";
 
 function CruiseSearchPage() {
-  const [cruiseLine, setCruiseLine] = useState(ANY);
-  const [ship, setShip] = useState(ANY);
+  const initial = Route.useSearch();
+  const [cruiseLine, setCruiseLine] = useState(initial.line ?? ANY);
+  const [ship, setShip] = useState(initial.ship ?? ANY);
   const [region, setRegion] = useState(ANY);
-  const [port, setPort] = useState(ANY);
-  const [from, setFrom] = useState("");
+  const [port, setPort] = useState(initial.port ?? ANY);
+  const [from, setFrom] = useState(initial.from ?? "");
   const [to, setTo] = useState("");
   const [q, setQ] = useState("");
   const [applied, setApplied] = useState(0);

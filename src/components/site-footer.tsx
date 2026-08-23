@@ -17,7 +17,7 @@ export function SiteFooter() {
         <div className="flex gap-16">
           <nav className="flex flex-col gap-3 text-sm text-navy-foreground/70">
             <span className="eyebrow text-brass">Explore</span>
-            <Link to="/cruises" className="transition-colors hover:text-brass">
+            <Link to="/cruises" search={{}} className="transition-colors hover:text-brass">
               Find a cruise
             </Link>
             <Link to="/about" className="transition-colors hover:text-brass">

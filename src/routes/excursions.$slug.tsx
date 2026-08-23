@@ -45,7 +45,7 @@ export const Route = createFileRoute("/excursions/$slug")({
     <div className="mx-auto max-w-3xl px-5 py-24 text-center">
       <h1 className="text-3xl">Tour not found</h1>
       <Button asChild className="mt-6 bg-brass text-brass-foreground hover:bg-brass-soft">
-        <Link to="/cruises">Find your cruise</Link>
+        <Link to="/cruises" search={{}}>Find your cruise</Link>
       </Button>
     </div>
   ),
