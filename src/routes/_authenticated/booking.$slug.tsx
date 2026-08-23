@@ -54,10 +54,28 @@ function BookingPage() {
   });
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   const excursion = offer.data?.excursion;
   const date = offer.data?.dates.find((d) => d.portCallId === portCall);
-  const total = excursion ? Number(excursion.price) * party : 0;
+  const addons = offer.data?.addons ?? [];
+  const excursionTotal = excursion ? Number(excursion.price) * party : 0;
+  const addonLines = addons
+    .filter((a) => selectedAddons.includes(a.id))
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      quantity: a.per_guest ? party : 1,
+      total: Number(a.price) * (a.per_guest ? party : 1),
+    }));
+  const addonTotal = addonLines.reduce((sum, l) => sum + l.total, 0);
+  const total = excursionTotal + addonTotal;
+
+  function toggleAddon(id: string) {
+    setSelectedAddons((current) =>
+      current.includes(id) ? current.filter((a) => a !== id) : [...current, id],
+    );
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -74,6 +92,7 @@ function BookingPage() {
           leadPhone: form.leadPhone,
           cabinNumber: form.cabinNumber,
           notes: form.notes,
+          addonIds: selectedAddons,
         },
       });
 
