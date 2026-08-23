@@ -34,22 +34,13 @@ export function SiteHeader() {
             </Link>
           ))}
           {isAdmin ? (
-            <>
-              <Link
-                to="/admin/refunds"
-                className="text-sm tracking-wide text-navy-foreground/80 transition-colors hover:text-brass"
-                activeProps={{ className: "text-brass" }}
-              >
-                Refunds
-              </Link>
-              <Link
-                to="/admin/audit-log"
-                className="text-sm tracking-wide text-navy-foreground/80 transition-colors hover:text-brass"
-                activeProps={{ className: "text-brass" }}
-              >
-                Audit log
-              </Link>
-            </>
+            <Link
+              to="/admin"
+              className="text-sm tracking-wide text-navy-foreground/80 transition-colors hover:text-brass"
+              activeProps={{ className: "text-brass" }}
+            >
+              Admin
+            </Link>
           ) : null}
         </nav>
 
@@ -80,14 +71,9 @@ export function SiteHeader() {
                 </Link>
               ))}
               {isAdmin ? (
-                <>
-                  <Link to="/admin/refunds" className="font-display text-xl">
-                    Refunds
-                  </Link>
-                  <Link to="/admin/audit-log" className="font-display text-xl">
-                    Audit log
-                  </Link>
-                </>
+                <Link to="/admin" className="font-display text-xl">
+                  Admin
+                </Link>
               ) : null}
               <Link to={user ? "/account" : "/auth"} className="font-display text-xl text-brass">
                 {user ? "My voyage" : "Sign in"}
