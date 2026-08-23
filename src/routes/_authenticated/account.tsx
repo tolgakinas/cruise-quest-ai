@@ -37,6 +37,9 @@ function AccountPage() {
           <Button asChild variant="outline">
             <Link to="/admin/audit-log">Admin audit log</Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link to="/admin/refunds">Refund requests</Link>
+          </Button>
         ) : null}
         <Button variant="outline" onClick={() => signOut()}>
           Sign out

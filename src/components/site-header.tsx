@@ -80,9 +80,14 @@ export function SiteHeader() {
                 </Link>
               ))}
               {isAdmin ? (
-                <Link to="/admin/audit-log" className="font-display text-xl">
-                  Audit log
-                </Link>
+                <>
+                  <Link to="/admin/refunds" className="font-display text-xl">
+                    Refunds
+                  </Link>
+                  <Link to="/admin/audit-log" className="font-display text-xl">
+                    Audit log
+                  </Link>
+                </>
               ) : null}
               <Link to={user ? "/account" : "/auth"} className="font-display text-xl text-brass">
                 {user ? "My voyage" : "Sign in"}
