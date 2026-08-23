@@ -46,6 +46,7 @@ export function SiteHeader() {
 
 
         <div className="hidden items-center gap-3 md:flex">
+          {user ? <NotificationBell /> : null}
           {user ? (
             <Button asChild variant="outline" className="border-brass/60 bg-transparent text-brass hover:bg-brass hover:text-brass-foreground">
               <Link to="/account">My voyage</Link>
