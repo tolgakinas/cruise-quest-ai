@@ -88,7 +88,7 @@ function CruiseSearchPage() {
       return;
     }
     if (!selectedSlug || !rows.some((r) => r.slug === selectedSlug)) {
-      setSelectedSlug(rows[0].slug);
+      setSelectedSlug(rows[0]?.slug ?? null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [results.data]);
