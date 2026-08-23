@@ -99,7 +99,17 @@ function ExcursionPage() {
       <section className="mx-auto max-w-7xl px-5 py-14">
         <div className="grid gap-12 lg:grid-cols-[1fr_24rem]">
           <div>
+            {ex.image_url ? (
+              <img
+                src={ex.image_url}
+                alt={ex.title}
+                width={1200}
+                height={800}
+                className="mb-8 aspect-[3/2] w-full rounded-2xl object-cover"
+              />
+            ) : null}
             <p className="text-lg leading-relaxed text-foreground/90">{ex.summary}</p>
+
             {ex.description ? (
               <p className="mt-6 whitespace-pre-line leading-relaxed text-muted-foreground">
                 {ex.description}
