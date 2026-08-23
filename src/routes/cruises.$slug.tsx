@@ -89,6 +89,12 @@ function SailingPage() {
             <span>{sailing.nights} nights</span>
             <span>{portCalls.length} ports of call</span>
           </div>
+          <FreshnessBanner
+            className="mt-6 max-w-3xl"
+            tone="dark"
+            updatedAt={data.freshness?.updatedAt}
+            source={data.freshness?.source}
+          />
         </div>
       </section>
 
