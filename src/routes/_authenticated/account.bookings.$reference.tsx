@@ -117,10 +117,14 @@ function ManageBookingPage() {
   async function cancel() {
     setBusy(true);
     try {
-      await cancelMyBooking({ data: { reference } });
+      const result = await cancelMyBooking({ data: { reference } });
       await queryClient.invalidateQueries({ queryKey: ["my-booking", reference] });
       await queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
-      toast.success("Your reservation has been cancelled.");
+      toast.success(
+        result?.refundRequested
+          ? "Reservation cancelled. Your refund request is with our team for review."
+          : "Your reservation has been cancelled.",
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "We couldn't cancel your reservation.");
     } finally {
