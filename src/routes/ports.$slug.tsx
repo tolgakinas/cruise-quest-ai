@@ -138,6 +138,7 @@ function PortPage() {
                       <MapPin className="size-3.5 text-brass" />
                       {shortTime(call.arrival_time)} – {shortTime(call.departure_time)}
                     </p>
+                    <FreshnessInline className="mt-1.5 block" updatedAt={call.updated_at} />
                   </li>
                 ))}
               </ul>
