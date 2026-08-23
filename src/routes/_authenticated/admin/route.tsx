@@ -4,6 +4,7 @@ import {
   BanknoteArrowDown,
   CalendarClock,
   LayoutDashboard,
+  Mail,
   MapPin,
   ScrollText,
   Ship,
