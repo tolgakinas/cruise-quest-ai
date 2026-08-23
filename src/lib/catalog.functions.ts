@@ -162,6 +162,7 @@ export const getExcursion = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ slug: z.string() }).parse(input))
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
+    const today = new Date().toISOString().slice(0, 10);
     const { data: excursion } = await supabase
       .from("excursions")
       .select(
@@ -178,6 +179,7 @@ export const getExcursion = createServerFn({ method: "POST" })
         "id, call_date, arrival_time, departure_time, day_number, sailings!inner(id, name, slug, is_published)",
       )
       .eq("port_id", excursion.ports.id)
+      .gte("call_date", today)
       .order("call_date");
 
     return { excursion, calls: (calls ?? []).filter((c) => c.sailings?.is_published) };
