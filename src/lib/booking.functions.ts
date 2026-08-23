@@ -334,7 +334,24 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
       if (used + partySize > capacity) {
         throw new Error(`Only ${Math.max(0, capacity - used)} place(s) left on that date.`);
       }
-      update["total_amount"] = Number(booking.excursions?.price ?? 0) * partySize;
+      // Re-price the extras too: per-guest extras follow the new party size.
+      const { data: bookedAddons } = await supabase
+        .from("booking_addons")
+        .select("id, addon_id, unit_price, excursion_addons(per_guest)")
+        .eq("booking_id", booking.id);
+      let addonTotal = 0;
+      for (const a of bookedAddons ?? []) {
+        const perGuest = a.excursion_addons?.per_guest ?? false;
+        const quantity = perGuest ? partySize : 1;
+        addonTotal += Number(a.unit_price) * quantity;
+        if (perGuest) {
+          await supabase
+            .from("booking_addons")
+            .update({ quantity, line_total: Number(a.unit_price) * quantity })
+            .eq("id", a.id);
+        }
+      }
+      update["total_amount"] = Number(booking.excursions?.price ?? 0) * partySize + addonTotal;
       changes.push({
         field: "total_amount",
         old_value: null,
