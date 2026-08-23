@@ -15,12 +15,16 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/cruises/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    line: typeof search.line === "string" ? search.line : undefined,
-    ship: typeof search.ship === "string" ? search.ship : undefined,
-    port: typeof search.port === "string" ? search.port : undefined,
-    from: typeof search.from === "string" ? search.from : undefined,
-  }),
+  validateSearch: (search?: Record<string, unknown>): {
+    line?: string;
+    ship?: string;
+    port?: string;
+    from?: string;
+  } => {
+    const s = search ?? {};
+    const str = (key: string) => (typeof s[key] === "string" ? (s[key] as string) : undefined);
+    return { line: str("line"), ship: str("ship"), port: str("port"), from: str("from") };
+  },
   head: () => ({
     meta: [
       { title: "Find Your Cruise — Shore Hopper" },
