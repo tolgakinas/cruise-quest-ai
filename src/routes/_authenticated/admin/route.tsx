@@ -24,6 +24,8 @@ const links: { to: string; label: string; icon: typeof Ticket; exact?: boolean }
   { to: "/admin/excursions", label: "Excursions", icon: Ticket },
   { to: "/admin/ports", label: "Ports", icon: MapPin },
   { to: "/admin/sailings", label: "Cruise data", icon: Ship },
+  { to: "/admin/imports", label: "Timetable imports", icon: CloudDownload },
+
   { to: "/admin/bookings", label: "Reservations", icon: CalendarClock },
   { to: "/admin/refunds", label: "Refunds", icon: BanknoteArrowDown },
   { to: "/admin/users", label: "Users", icon: Users },
