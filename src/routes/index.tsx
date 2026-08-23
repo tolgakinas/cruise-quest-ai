@@ -148,8 +148,9 @@ function HomePage() {
             >
               <div className="aspect-[4/3] overflow-hidden bg-muted">
                 <img
-                  src={regionImage(excursion.ports.name)}
-                  alt={`${excursion.ports.name} shore excursion`}
+                  src={excursion.image_url ?? regionImage(excursion.ports.name)}
+                  alt={excursion.title}
+
                   loading="lazy"
                   width={912}
                   height={684}

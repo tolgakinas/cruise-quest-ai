@@ -95,7 +95,7 @@ export const getSailing = createServerFn({ method: "POST" })
       ? await supabase
           .from("excursions")
           .select(
-            "id, title, slug, summary, duration_minutes, price, currency, category, difficulty, port_id",
+            "id, title, slug, summary, duration_minutes, price, currency, category, difficulty, port_id, image_url",
           )
           .in("port_id", portIds)
           .eq("is_published", true)
@@ -120,7 +120,7 @@ export const getPort = createServerFn({ method: "POST" })
       supabase
         .from("excursions")
         .select(
-          "id, title, slug, summary, duration_minutes, price, currency, category, difficulty, capacity",
+          "id, title, slug, summary, duration_minutes, price, currency, category, difficulty, capacity, image_url",
         )
         .eq("port_id", port.id)
         .eq("is_published", true)
@@ -148,7 +148,7 @@ export const getExcursion = createServerFn({ method: "POST" })
     const { data: excursion } = await supabase
       .from("excursions")
       .select(
-        "id, title, slug, summary, description, duration_minutes, price, currency, capacity, meeting_point, category, difficulty, ports!inner(id, name, slug, country, region, description)",
+        "id, title, slug, summary, description, duration_minutes, price, currency, capacity, meeting_point, category, difficulty, image_url, ports!inner(id, name, slug, country, region, description)",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
@@ -180,7 +180,7 @@ export const getHomeShowcase = createServerFn({ method: "GET" }).handler(async (
     supabase
       .from("excursions")
       .select(
-        "id, title, slug, summary, price, currency, duration_minutes, category, ports!inner(name, slug, country)",
+        "id, title, slug, summary, price, currency, duration_minutes, category, image_url, ports!inner(name, slug, country)",
       )
       .eq("is_published", true)
       .order("price", { ascending: false })

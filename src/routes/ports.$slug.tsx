@@ -77,12 +77,24 @@ function PortPage() {
             ) : (
               <ul className="mt-8 grid gap-6 md:grid-cols-2">
                 {excursions.map((ex) => (
-                  <li key={ex.id} className="rounded-lg border border-border p-6">
+                  <li key={ex.id} className="overflow-hidden rounded-lg border border-border">
+                    {ex.image_url ? (
+                      <img
+                        src={ex.image_url}
+                        alt={ex.title}
+                        loading="lazy"
+                        width={1200}
+                        height={800}
+                        className="h-44 w-full object-cover"
+                      />
+                    ) : null}
+                    <div className="p-6">
                     <div className="flex items-center justify-between gap-3">
                       <p className="eyebrow text-brass">{ex.category ?? "Excursion"}</p>
                       <p className="font-display text-xl">{formatMoney(ex.price, ex.currency)}</p>
                     </div>
                     <h3 className="mt-3 font-display text-xl">{ex.title}</h3>
+
                     <p className="mt-2 text-sm text-muted-foreground">{ex.summary}</p>
                     <p className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground">
                       <Clock className="size-3.5 text-brass" />
@@ -97,7 +109,9 @@ function PortPage() {
                         View & book
                       </Link>
                     </Button>
+                    </div>
                   </li>
+
                 ))}
               </ul>
             )}

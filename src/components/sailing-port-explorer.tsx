@@ -33,7 +33,9 @@ export type ExcursionCard = {
   category: string | null;
   difficulty: string | null;
   port_id: string;
+  image_url?: string | null;
 };
+
 
 export function SailingPortExplorer({
   calls,
@@ -142,12 +144,24 @@ export function SailingPortExplorer({
                   return (
                     <li
                       key={ex.id}
-                      className="flex flex-col rounded-lg border border-border p-6 transition-colors hover:border-brass/60"
+                      className="flex flex-col overflow-hidden rounded-lg border border-border transition-colors hover:border-brass/60"
                     >
+                      {ex.image_url ? (
+                        <img
+                          src={ex.image_url}
+                          alt={ex.title}
+                          loading="lazy"
+                          width={1200}
+                          height={800}
+                          className="h-44 w-full object-cover"
+                        />
+                      ) : null}
+                      <div className="flex flex-1 flex-col p-6">
                       <div className="flex items-center justify-between gap-3">
                         <p className="eyebrow text-brass">{ex.category ?? "Excursion"}</p>
                         <p className="font-display text-xl">{formatMoney(ex.price, ex.currency)}</p>
                       </div>
+
                       <h3 className="mt-3 font-display text-xl leading-snug">
                         <Link
                           to="/excursions/$slug"
@@ -188,7 +202,9 @@ export function SailingPortExplorer({
                           View & book
                         </Link>
                       </Button>
+                      </div>
                     </li>
+
                   );
                 })}
               </ul>
