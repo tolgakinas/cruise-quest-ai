@@ -7,7 +7,7 @@ import {
   recommendExcursions,
   recommendForMyVoyage,
 } from "@/lib/recommend.functions";
-import type { RecommendationResult } from "@/lib/recommend.server";
+import type { RecommendationResult } from "@/lib/recommend.types";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
