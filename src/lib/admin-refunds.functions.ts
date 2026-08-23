@@ -5,18 +5,24 @@ import { createStripeClient, getStripeErrorMessage, type StripeEnv } from "@/lib
 
 const EnvSchema = z.enum(["sandbox", "live"]);
 
-async function assertAdmin(supabase: {
-  from: (t: "user_roles") => {
-    select: (c: string) => {
-      eq: (
-        c: string,
-        v: string,
-      ) => {
-        eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: unknown }> };
+type AuthedContext = { supabase: { from: (table: never) => never }; userId: string };
+
+async function assertAdmin(context: unknown) {
+  const { supabase, userId } = context as {
+    supabase: {
+      from: (t: string) => {
+        select: (c: string) => {
+          eq: (
+            c: string,
+            v: string,
+          ) => {
+            eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: unknown }> };
+          };
+        };
       };
     };
+    userId: string;
   };
-}, userId: string) {
   const { data } = await supabase
     .from("user_roles")
     .select("role")
