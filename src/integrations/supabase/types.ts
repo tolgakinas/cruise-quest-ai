@@ -569,35 +569,47 @@ export type Database = {
       }
       import_sources: {
         Row: {
+          attempts: number
           created_at: string
           cruise_line_slug: string | null
           id: string
           is_active: boolean
+          kind: string
           label: string
+          last_error: string | null
           last_run_at: string | null
           parser: string
+          ship_slug: string | null
           updated_at: string
           url: string
         }
         Insert: {
+          attempts?: number
           created_at?: string
           cruise_line_slug?: string | null
           id?: string
           is_active?: boolean
+          kind?: string
           label: string
+          last_error?: string | null
           last_run_at?: string | null
           parser?: string
+          ship_slug?: string | null
           updated_at?: string
           url: string
         }
         Update: {
+          attempts?: number
           created_at?: string
           cruise_line_slug?: string | null
           id?: string
           is_active?: boolean
+          kind?: string
           label?: string
+          last_error?: string | null
           last_run_at?: string | null
           parser?: string
+          ship_slug?: string | null
           updated_at?: string
           url?: string
         }

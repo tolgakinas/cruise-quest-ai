@@ -45,7 +45,7 @@ export type ImportStats = {
 const GATEWAY = "https://connector-gateway.lovable.dev/firecrawl/v2";
 const DIRECT = "https://api.firecrawl.dev/v2";
 
-function firecrawlRequest(path: string, body: unknown) {
+export function firecrawlRequest(path: string, body: unknown) {
   const key = process.env["FIRECRAWL_API_KEY"];
   if (!key) throw new Error("FIRECRAWL_API_KEY is not configured");
 
