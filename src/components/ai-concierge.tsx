@@ -23,6 +23,7 @@ const OPENERS = [
 export function AiConcierge() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"ask" | "plan">("ask");
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([
