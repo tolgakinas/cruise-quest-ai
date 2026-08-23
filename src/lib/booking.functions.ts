@@ -393,7 +393,10 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
     return { reference: booking.reference, changed: true };
   });
 
-/** Signed in: cancel my own reservation. */
+/**
+ * Signed in: cancel my own reservation. If it was already paid, the cancellation
+ * raises a refund request that an admin has to approve — no automatic refund.
+ */
 export const cancelMyBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -403,12 +406,14 @@ export const cancelMyBooking = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: booking } = await supabase
       .from("bookings")
-      .select("id, user_id, status")
+      .select("id, user_id, status, total_amount, currency")
       .eq("reference", data.reference)
       .maybeSingle();
     if (!booking) throw new Error("Reservation not found.");
     if (booking.user_id !== userId) throw new Error("You cannot cancel this reservation.");
-    if (booking.status === "cancelled") return { ok: true };
+    if (booking.status === "cancelled") return { ok: true, refundRequested: false };
+
+    const wasPaid = booking.status === "confirmed";
 
     const { error } = await supabase
       .from("bookings")
@@ -425,5 +430,26 @@ export const cancelMyBooking = createServerFn({ method: "POST" })
       note: data.reason ? `Passenger cancellation: ${data.reason}` : "Cancelled by passenger",
     });
 
-    return { ok: true };
+    let refundRequested = false;
+    if (wasPaid) {
+      const { data: pending } = await supabase
+        .from("refund_requests")
+        .select("id")
+        .eq("booking_id", booking.id)
+        .eq("status", "pending")
+        .maybeSingle();
+      if (!pending) {
+        const { error: refundError } = await supabase.from("refund_requests").insert({
+          booking_id: booking.id,
+          user_id: userId,
+          reason: data.reason || null,
+          amount: booking.total_amount,
+          currency: booking.currency,
+        });
+        if (refundError) throw new Error(refundError.message);
+      }
+      refundRequested = true;
+    }
+
+    return { ok: true, refundRequested };
   });
