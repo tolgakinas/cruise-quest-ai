@@ -20,6 +20,7 @@ import { Route as CruisesSlugRouteImport } from './routes/cruises.$slug'
 import { Route as ExcursionsSlugRouteImport } from './routes/excursions.$slug'
 import { Route as PortsSlugRouteImport } from './routes/ports.$slug'
 import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin/audit-log'
+import { Route as AuthenticatedAdminRefundsRouteImport } from './routes/_authenticated/admin/refunds'
 import { Route as AuthenticatedBookingSlugRouteImport } from './routes/_authenticated/booking.$slug'
 import { Route as AuthenticatedBookingReturnRouteImport } from './routes/_authenticated/booking.return'
 import { Route as AuthenticatedAccountBookingsIndexRouteImport } from './routes/_authenticated/account.bookings.index'
@@ -80,6 +81,12 @@ const AuthenticatedAdminAuditLogRoute =
     path: '/admin/audit-log',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminRefundsRoute =
+  AuthenticatedAdminRefundsRouteImport.update({
+    id: '/admin/refunds',
+    path: '/admin/refunds',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBookingSlugRoute =
   AuthenticatedBookingSlugRouteImport.update({
     id: '/booking/$slug',
@@ -116,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises/': typeof CruisesIndexRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
+  '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
   '/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
@@ -132,6 +140,7 @@ export interface FileRoutesByTo {
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises': typeof CruisesIndexRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
+  '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
   '/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
@@ -150,6 +159,7 @@ export interface FileRoutesById {
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises/': typeof CruisesIndexRoute
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
+  '/_authenticated/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/_authenticated/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/_authenticated/booking/return': typeof AuthenticatedBookingReturnRoute
   '/_authenticated/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/ports/$slug'
     | '/cruises/'
     | '/admin/audit-log'
+    | '/admin/refunds'
     | '/booking/$slug'
     | '/booking/return'
     | '/account/bookings/$reference'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/ports/$slug'
     | '/cruises'
     | '/admin/audit-log'
+    | '/admin/refunds'
     | '/booking/$slug'
     | '/booking/return'
     | '/account/bookings/$reference'
@@ -201,6 +213,7 @@ export interface FileRouteTypes {
     | '/ports/$slug'
     | '/cruises/'
     | '/_authenticated/admin/audit-log'
+    | '/_authenticated/admin/refunds'
     | '/_authenticated/booking/$slug'
     | '/_authenticated/booking/return'
     | '/_authenticated/account/bookings/$reference'
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditLogRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/refunds': {
+      id: '/_authenticated/admin/refunds'
+      path: '/admin/refunds'
+      fullPath: '/admin/refunds'
+      preLoaderRoute: typeof AuthenticatedAdminRefundsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/booking/$slug': {
       id: '/_authenticated/booking/$slug'
       path: '/booking/$slug'
@@ -347,6 +367,7 @@ const AuthenticatedAccountRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRouteWithChildren
   AuthenticatedAdminAuditLogRoute: typeof AuthenticatedAdminAuditLogRoute
+  AuthenticatedAdminRefundsRoute: typeof AuthenticatedAdminRefundsRoute
   AuthenticatedBookingSlugRoute: typeof AuthenticatedBookingSlugRoute
   AuthenticatedBookingReturnRoute: typeof AuthenticatedBookingReturnRoute
 }
@@ -354,6 +375,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRouteWithChildren,
   AuthenticatedAdminAuditLogRoute: AuthenticatedAdminAuditLogRoute,
+  AuthenticatedAdminRefundsRoute: AuthenticatedAdminRefundsRoute,
   AuthenticatedBookingSlugRoute: AuthenticatedBookingSlugRoute,
   AuthenticatedBookingReturnRoute: AuthenticatedBookingReturnRoute,
 }

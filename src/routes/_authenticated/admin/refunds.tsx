@@ -43,7 +43,7 @@ export const Route = createFileRoute("/_authenticated/admin/refunds")({
 type StatusFilter = "pending" | "approved" | "declined" | "all";
 
 function RefundsPage() {
-  const { isAdmin, isLoading: roleLoading } = useIsAdmin();
+  const { isAdmin, checking: roleLoading } = useIsAdmin();
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<StatusFilter>("pending");
   const [notes, setNotes] = useState<Record<string, string>>({});
