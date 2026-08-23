@@ -328,6 +328,62 @@ export type Database = {
         }
         Relationships: []
       }
+      email_outbox: {
+        Row: {
+          attempts: number
+          body: string
+          booking_id: string | null
+          created_at: string
+          error: string | null
+          id: string
+          sent_at: string | null
+          status: string
+          subject: string
+          template: string
+          to_email: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          body: string
+          booking_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template?: string
+          to_email: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          body?: string
+          booking_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template?: string
+          to_email?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_outbox_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       excursion_addons: {
         Row: {
           created_at: string
@@ -546,6 +602,50 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          booking_id: string | null
+          created_at: string
+          href: string | null
+          id: string
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          booking_id?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          booking_id?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
