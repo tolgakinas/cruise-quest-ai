@@ -23,6 +23,7 @@ import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authen
 import { Route as AuthenticatedBookingSlugRouteImport } from './routes/_authenticated/booking.$slug'
 import { Route as AuthenticatedBookingReturnRouteImport } from './routes/_authenticated/booking.return'
 import { Route as AuthenticatedAccountBookingsIndexRouteImport } from './routes/_authenticated/account.bookings.index'
+import { Route as AuthenticatedAccountBookingsReferenceRouteImport } from './routes/_authenticated/account.bookings.$reference'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -97,6 +98,12 @@ const AuthenticatedAccountBookingsIndexRoute =
     path: '/bookings/',
     getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
+const AuthenticatedAccountBookingsReferenceRoute =
+  AuthenticatedAccountBookingsReferenceRouteImport.update({
+    id: '/bookings/$reference',
+    path: '/bookings/$reference',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
   '/account/bookings/': typeof AuthenticatedAccountBookingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -126,6 +134,7 @@ export interface FileRoutesByTo {
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
   '/account/bookings': typeof AuthenticatedAccountBookingsIndexRoute
 }
 export interface FileRoutesById {
@@ -143,6 +152,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/_authenticated/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/_authenticated/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
   '/_authenticated/account/bookings/': typeof AuthenticatedAccountBookingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/admin/audit-log'
     | '/booking/$slug'
     | '/booking/return'
+    | '/account/bookings/$reference'
     | '/account/bookings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/admin/audit-log'
     | '/booking/$slug'
     | '/booking/return'
+    | '/account/bookings/$reference'
     | '/account/bookings'
   id:
     | '__root__'
@@ -191,6 +203,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/audit-log'
     | '/_authenticated/booking/$slug'
     | '/_authenticated/booking/return'
+    | '/_authenticated/account/bookings/$reference'
     | '/_authenticated/account/bookings/'
   fileRoutesById: FileRoutesById
 }
@@ -306,14 +319,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountBookingsIndexRouteImport
       parentRoute: typeof AuthenticatedAccountRoute
     }
+    '/_authenticated/account/bookings/$reference': {
+      id: '/_authenticated/account/bookings/$reference'
+      path: '/bookings/$reference'
+      fullPath: '/account/bookings/$reference'
+      preLoaderRoute: typeof AuthenticatedAccountBookingsReferenceRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
   }
 }
 
 interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountBookingsReferenceRoute: typeof AuthenticatedAccountBookingsReferenceRoute
   AuthenticatedAccountBookingsIndexRoute: typeof AuthenticatedAccountBookingsIndexRoute
 }
 
 const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountBookingsReferenceRoute:
+    AuthenticatedAccountBookingsReferenceRoute,
   AuthenticatedAccountBookingsIndexRoute:
     AuthenticatedAccountBookingsIndexRoute,
 }

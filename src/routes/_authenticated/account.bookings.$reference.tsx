@@ -130,7 +130,7 @@ function ManageBookingPage() {
         },
       });
       if ("error" in result) throw new Error(result.error);
-      navigate({ to: "/account/bookings/$reference/pay", params: { reference } });
+      setClientSecret(result.clientSecret);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "We couldn't start the payment.");
     } finally {
