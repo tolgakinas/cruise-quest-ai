@@ -63,10 +63,11 @@ function SailingPage() {
   const calls = data?.calls ?? [];
   const portCalls = calls.filter((c) => !c.is_sea_day && c.ports);
   const [selectedCallId, setSelectedCallId] = useState<string | null>(portCalls[0]?.id ?? null);
+  const selected = portCalls.find((c) => c.id === selectedCallId) ?? portCalls[0];
+  const selectedUpdated = useRelativeTime(selected?.updated_at);
 
   if (!data) return null;
   const { sailing, excursions } = data;
-  const selected = portCalls.find((c) => c.id === selectedCallId) ?? portCalls[0];
   const portExcursions = selected
     ? excursions.filter((e) => e.port_id === selected.ports?.id)
     : [];
