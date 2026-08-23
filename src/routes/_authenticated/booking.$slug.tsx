@@ -199,6 +199,53 @@ function BookingPage() {
                     className="mt-2"
                   />
                 </div>
+
+                {addons.length ? (
+                  <div>
+                    <div className="rule-brass mb-6" />
+                    <p className="eyebrow text-brass">Add to your day ashore</p>
+                    <div className="mt-4 space-y-3">
+                      {addons.map((addon) => {
+                        const quantity = addon.per_guest ? party : 1;
+                        const lineTotal = Number(addon.price) * quantity;
+                        const checked = selectedAddons.includes(addon.id);
+                        return (
+                          <label
+                            key={addon.id}
+                            className={`flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-colors ${
+                              checked ? "border-brass bg-brass/10" : "border-border hover:border-brass/50"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleAddon(addon.id)}
+                              className="mt-1 h-4 w-4 accent-brass"
+                            />
+                            <span className="flex-1">
+                              <span className="flex flex-wrap items-baseline justify-between gap-2">
+                                <span className="font-medium">{addon.name}</span>
+                                <span className="font-display">
+                                  {formatMoney(lineTotal, addon.currency)}
+                                </span>
+                              </span>
+                              {addon.description ? (
+                                <span className="mt-1 block text-sm text-muted-foreground">
+                                  {addon.description}
+                                </span>
+                              ) : null}
+                              <span className="mt-1 block text-xs text-muted-foreground">
+                                {addon.per_guest
+                                  ? `${formatMoney(addon.price, addon.currency)} per guest`
+                                  : "Per booking"}
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
                 <Button
                   type="submit"
                   disabled={submitting}
