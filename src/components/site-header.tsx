@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
 import { BrandLogo } from "./brand-logo";
+import { NotificationBell } from "./notification-bell";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
