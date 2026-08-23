@@ -210,7 +210,8 @@ function ManageBookingPage() {
             {refundRequests.map((request) => (
               <li key={request.id} className="flex flex-wrap items-baseline justify-between gap-3">
                 <span>
-                  {formatDate(request.created_at)} · {formatMoney(request.amount, request.currency)}
+                  {formatDate(request.created_at)} ·{" "}
+                  {formatMoney(request.amount ?? booking.total_amount, request.currency)}
                   {request.admin_note ? ` — ${request.admin_note}` : ""}
                 </span>
                 <Badge variant="outline">{request.status}</Badge>
