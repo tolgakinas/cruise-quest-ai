@@ -483,3 +483,86 @@ export const cancelMyBooking = createServerFn({ method: "POST" })
 
     return { ok: true, refundRequested };
   });
+
+/**
+ * Signed in: everything the guest needs to move a reservation — the ports their
+ * sailing still calls at, the published tours in each port, and the remaining
+ * seats for every tour/date combination.
+ */
+export const getBookingChangeOptions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ reference: z.string().min(3) }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const today = new Date().toISOString().slice(0, 10);
+
+    const { data: booking } = await supabase
+      .from("bookings")
+      .select("id, user_id, sailing_id, excursion_id, port_call_id, party_size, excursions(port_id)")
+      .eq("reference", data.reference)
+      .maybeSingle();
+    if (!booking || booking.user_id !== userId) return null;
+
+    let callsQuery = supabase
+      .from("sailing_port_calls")
+      .select(
+        "id, call_date, arrival_time, departure_time, day_number, port_id, ports(id, name, slug, country), sailings(name, slug)",
+      )
+      .eq("is_sea_day", false)
+      .not("port_id", "is", null)
+      .gte("call_date", today)
+      .order("call_date");
+    callsQuery = booking.sailing_id
+      ? callsQuery.eq("sailing_id", booking.sailing_id)
+      : callsQuery.eq("port_id", booking.excursions?.port_id ?? "");
+
+    const { data: calls } = await callsQuery;
+    const portIds = [...new Set((calls ?? []).map((c) => c.port_id).filter(Boolean) as string[])];
+    if (!portIds.length) return { ports: [], calls: [], excursions: [], seats: {} };
+
+    const { data: excursions } = await supabase
+      .from("excursions")
+      .select("id, title, slug, price, currency, duration_minutes, capacity, category, port_id, image_url")
+      .in("port_id", portIds)
+      .eq("is_published", true)
+      .order("title");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: taken } = await supabaseAdmin
+      .from("bookings")
+      .select("id, excursion_id, tour_date, party_size, status, expires_at")
+      .in("excursion_id", (excursions ?? []).map((e) => e.id))
+      .gte("tour_date", today)
+      .in("status", ["reserved", "confirmed"]);
+
+    const now = Date.now();
+    const used = new Map<string, number>();
+    for (const b of taken ?? []) {
+      if (b.id === booking.id) continue;
+      if (b.status === "reserved" && b.expires_at && new Date(b.expires_at).getTime() < now) continue;
+      const key = `${b.excursion_id}|${b.tour_date}`;
+      used.set(key, (used.get(key) ?? 0) + b.party_size);
+    }
+
+    const seats: Record<string, number> = {};
+    for (const excursion of excursions ?? []) {
+      for (const call of calls ?? []) {
+        if (call.port_id !== excursion.port_id) continue;
+        const key = `${excursion.id}|${call.call_date}`;
+        seats[key] = Math.max(0, excursion.capacity - (used.get(key) ?? 0));
+      }
+    }
+
+    const ports = portIds
+      .map((id) => (calls ?? []).find((c) => c.port_id === id)?.ports)
+      .filter(Boolean) as { id: string; name: string; slug: string; country: string }[];
+
+    return {
+      ports,
+      calls: calls ?? [],
+      excursions: excursions ?? [],
+      seats,
+      currentExcursionId: booking.excursion_id,
+      currentPortCallId: booking.port_call_id,
+    };
+  });
