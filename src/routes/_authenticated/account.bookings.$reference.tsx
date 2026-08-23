@@ -3,7 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
-import { cancelMyBooking, getMyBooking, modifyMyBooking } from "@/lib/booking.functions";
+import {
+  cancelMyBooking,
+  getBookingChangeOptions,
+  getMyBooking,
+  modifyMyBooking,
+} from "@/lib/booking.functions";
 import { createBookingCheckout } from "@/lib/payments.functions";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
@@ -19,7 +24,8 @@ export const Route = createFileRoute("/_authenticated/account/bookings/$referenc
       { title: "Manage Reservation — Shore Hopper" },
       {
         name: "description",
-        content: "Change your excursion date, party size or contact details, or cancel your reservation.",
+        content:
+          "Change the port, tour, time or party size of your shore excursion, follow its status or cancel it.",
       },
       { property: "og:title", content: "Manage Reservation — Shore Hopper" },
       { property: "og:description", content: "Change or cancel your shore excursion reservation." },
@@ -27,6 +33,41 @@ export const Route = createFileRoute("/_authenticated/account/bookings/$referenc
   }),
   component: ManageBookingPage,
 });
+
+/** Plain-language meaning of every reservation state the guest can land in. */
+function statusMeta(status: string, pendingRefund: boolean) {
+  if (status === "reserved") {
+    return {
+      label: "Awaiting payment",
+      tone: "border-brass/50 bg-brass/10",
+      note: "Your places are held for a short while. Complete payment to confirm them.",
+    };
+  }
+  if (status === "confirmed") {
+    return {
+      label: "Confirmed",
+      tone: "border-emerald-600/40 bg-emerald-600/10",
+      note: "Paid and secured. You can still change the port, tour, time or party size below.",
+    };
+  }
+  if (status === "cancelled") {
+    return {
+      label: pendingRefund ? "Cancelled — refund pending" : "Cancelled",
+      tone: "border-destructive/40 bg-destructive/10",
+      note: pendingRefund
+        ? "Cancelled. Your refund request is with our reservations team for review."
+        : "This reservation is cancelled and can no longer be changed.",
+    };
+  }
+  if (status === "refunded") {
+    return {
+      label: "Refunded",
+      tone: "border-border bg-muted",
+      note: "The payment has been returned to your original payment method.",
+    };
+  }
+  return { label: status, tone: "border-border bg-muted", note: "" };
+}
 
 function ManageBookingPage() {
   const { reference } = Route.useParams();
@@ -36,9 +77,17 @@ function ManageBookingPage() {
     queryKey: ["my-booking", reference],
     queryFn: () => getMyBooking({ data: { reference } }),
   });
+  const optionsQuery = useQuery({
+    queryKey: ["my-booking-options", reference],
+    queryFn: () => getBookingChangeOptions({ data: { reference } }),
+  });
 
   const booking = query.data?.booking;
+  const options = optionsQuery.data;
+
   const [form, setForm] = useState({
+    portId: "",
+    excursionId: "",
     portCallId: "",
     partySize: 1,
     leadName: "",
@@ -52,16 +101,26 @@ function ManageBookingPage() {
 
   useEffect(() => {
     if (!booking) return;
-    setForm({
+    setForm((prev) => ({
+      ...prev,
       portCallId: booking.port_call_id ?? "",
+      excursionId: booking.excursion_id,
       partySize: booking.party_size,
       leadName: booking.lead_passenger_name,
       leadEmail: booking.lead_passenger_email,
       leadPhone: booking.lead_passenger_phone ?? "",
       cabinNumber: booking.cabin_number ?? "",
       notes: booking.notes ?? "",
-    });
+    }));
   }, [booking?.id]);
+
+  // Once the itinerary options arrive, anchor the port selector on the current port call.
+  useEffect(() => {
+    if (!options || !booking) return;
+    const currentCall = options.calls.find((c) => c.id === booking.port_call_id);
+    const fallbackPort = options.ports[0]?.id ?? "";
+    setForm((prev) => ({ ...prev, portId: prev.portId || currentCall?.port_id || fallbackPort }));
+  }, [options, booking?.id]);
 
   if (query.isLoading) {
     return <div className="mx-auto max-w-4xl px-5 py-24 text-muted-foreground">Loading…</div>;
@@ -78,25 +137,58 @@ function ManageBookingPage() {
   }
 
   const closed = booking.status === "cancelled" || booking.status === "refunded";
-  const unitPrice = Number(booking.excursions?.price ?? 0);
   const extras = booking.booking_addons ?? [];
   const refundRequests = query.data?.refundRequests ?? [];
-  const pendingRefund = refundRequests.find((r) => r.status === "pending");
+  const pendingRefund = Boolean(refundRequests.find((r) => r.status === "pending"));
+  const status = statusMeta(booking.status, pendingRefund);
+
+  const portExcursions = (options?.excursions ?? []).filter((e) => e.port_id === form.portId);
+  const portCalls = (options?.calls ?? []).filter((c) => c.port_id === form.portId);
+  const selectedExcursion =
+    portExcursions.find((e) => e.id === form.excursionId) ?? portExcursions[0];
+  const excursionChanged = selectedExcursion ? selectedExcursion.id !== booking.excursion_id : false;
+
+  const unitPrice = Number(selectedExcursion?.price ?? booking.excursions?.price ?? 0);
+  const currency = selectedExcursion?.currency ?? booking.currency;
   // Per-guest extras follow the guest count; per-booking extras are charged once.
-  const extrasTotalForParty = extras.reduce((sum, extra) => {
-    const perGuest = extra.excursion_addons?.per_guest ?? false;
-    return sum + Number(extra.unit_price) * (perGuest ? form.partySize : 1);
-  }, 0);
+  // Swapping to another tour drops the extras, so they no longer count.
+  const extrasTotalForParty = excursionChanged
+    ? 0
+    : extras.reduce((sum, extra) => {
+        const perGuest = extra.excursion_addons?.per_guest ?? false;
+        return sum + Number(extra.unit_price) * (perGuest ? form.partySize : 1);
+      }, 0);
+  const newTotal = unitPrice * form.partySize + extrasTotalForParty;
+
+  function seatsFor(excursionId: string, date: string) {
+    return options?.seats[`${excursionId}|${date}`];
+  }
+
+  function pickPort(portId: string) {
+    const firstExcursion = (options?.excursions ?? []).find((e) => e.port_id === portId);
+    const firstCall = (options?.calls ?? []).find((c) => c.port_id === portId);
+    setForm((prev) => ({
+      ...prev,
+      portId,
+      excursionId: firstExcursion?.id ?? "",
+      portCallId: firstCall?.id ?? "",
+    }));
+  }
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
+    if (!form.portCallId) {
+      toast.error("Please choose a tour date first.");
+      return;
+    }
     setBusy(true);
     try {
       await modifyMyBooking({
         data: {
           reference,
           partySize: form.partySize,
-          portCallId: form.portCallId || undefined,
+          portCallId: form.portCallId,
+          excursionId: selectedExcursion?.id,
           leadName: form.leadName,
           leadEmail: form.leadEmail,
           leadPhone: form.leadPhone,
@@ -105,6 +197,7 @@ function ManageBookingPage() {
         },
       });
       await queryClient.invalidateQueries({ queryKey: ["my-booking", reference] });
+      await queryClient.invalidateQueries({ queryKey: ["my-booking-options", reference] });
       await queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
       toast.success("Your reservation has been updated.");
     } catch (error) {
@@ -156,13 +249,18 @@ function ManageBookingPage() {
       <p className="eyebrow text-brass">Ref {booking.reference}</p>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-4xl">{booking.excursions?.title}</h1>
-        <Badge variant="outline">{booking.status}</Badge>
+        <Badge variant="outline">{status.label}</Badge>
       </div>
       <p className="mt-3 text-muted-foreground">
         {booking.excursions?.ports?.name} · {formatDate(booking.tour_date)} ·{" "}
-        {formatMoney(booking.total_amount, booking.currency)}
+        {formatMoney(booking.total_amount, booking.currency)} · {booking.party_size} guest(s)
       </p>
       <div className="rule-brass mt-6" />
+
+      <div className={`mt-8 rounded-lg border p-5 ${status.tone}`}>
+        <p className="eyebrow text-brass">Status — {status.label}</p>
+        <p className="mt-2 text-sm">{status.note}</p>
+      </div>
 
       {clientSecret ? (
         <div className="mt-8 rounded-lg border border-border p-4">
@@ -171,14 +269,11 @@ function ManageBookingPage() {
           </EmbeddedCheckoutProvider>
         </div>
       ) : booking.status === "reserved" ? (
-        <div className="mt-8 rounded-lg border border-brass/40 bg-brass/10 p-5">
-          <p className="text-sm">
-            This reservation is not paid yet. Complete payment to secure your places.
-          </p>
+        <div className="mt-6">
           <Button
             onClick={pay}
             disabled={busy}
-            className="mt-4 bg-brass text-brass-foreground hover:bg-brass-soft"
+            className="bg-brass text-brass-foreground hover:bg-brass-soft"
           >
             Pay now
           </Button>
@@ -214,36 +309,133 @@ function ManageBookingPage() {
                   {formatMoney(request.amount ?? booking.total_amount, request.currency)}
                   {request.admin_note ? ` — ${request.admin_note}` : ""}
                 </span>
-                <Badge variant="outline">{request.status}</Badge>
+                <Badge variant="outline">
+                  {request.status === "pending"
+                    ? "Pending review"
+                    : request.status === "approved"
+                      ? "Approved"
+                      : "Declined"}
+                </Badge>
               </li>
             ))}
           </ul>
-          {pendingRefund ? (
-            <p className="mt-4 text-xs text-muted-foreground">
-              Our reservations team reviews refunds within one business day.
-            </p>
-          ) : null}
         </div>
       ) : null}
 
-      <form onSubmit={save} className="mt-10 space-y-6">
+      <form onSubmit={save} className="mt-12 space-y-8">
         <div>
-          <Label htmlFor="portCallId">Tour date</Label>
-          <select
-            id="portCallId"
-            disabled={closed}
-            value={form.portCallId}
-            onChange={(e) => setForm({ ...form, portCallId: e.target.value })}
-            className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          >
-            {(query.data?.alternatives ?? []).map((call) => (
-              <option key={call.id} value={call.id}>
-                {formatDate(call.call_date)} — {call.sailings?.name} ({shortTime(call.arrival_time)}{" "}
-                – {shortTime(call.departure_time)})
-              </option>
-            ))}
-          </select>
+          <h2 className="font-display text-2xl">Change your excursion</h2>
+          <div className="rule-brass mt-4" />
+          <p className="mt-3 text-sm text-muted-foreground">
+            Pick a port your ship calls at, then a tour in that port, then the day and time. Prices
+            and remaining seats are recalculated when you save.
+          </p>
         </div>
+
+        {optionsQuery.isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading your itinerary…</p>
+        ) : (
+          <>
+            {/* Step 1 — port */}
+            <div>
+              <p className="eyebrow text-brass">Step 1 — Port</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(options?.ports ?? []).map((port) => (
+                  <button
+                    key={port.id}
+                    type="button"
+                    disabled={closed}
+                    onClick={() => pickPort(port.id)}
+                    className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                      form.portId === port.id
+                        ? "border-brass bg-brass text-brass-foreground"
+                        : "border-border hover:border-brass hover:text-brass"
+                    }`}
+                  >
+                    {port.name}
+                    <span className="ml-2 text-xs opacity-70">{port.country}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Step 2 — tour */}
+            <div>
+              <p className="eyebrow text-brass">Step 2 — Tour</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {portExcursions.map((excursion) => (
+                  <button
+                    key={excursion.id}
+                    type="button"
+                    disabled={closed}
+                    onClick={() => setForm((prev) => ({ ...prev, excursionId: excursion.id }))}
+                    className={`rounded-lg border p-4 text-left transition-colors ${
+                      selectedExcursion?.id === excursion.id
+                        ? "border-brass bg-brass/10"
+                        : "border-border hover:border-brass/60"
+                    }`}
+                  >
+                    <p className="font-display text-lg leading-tight">{excursion.title}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {Math.round(excursion.duration_minutes / 60)} h ·{" "}
+                      {formatMoney(excursion.price, excursion.currency)} per guest
+                      {excursion.id === booking.excursion_id ? " · current tour" : ""}
+                    </p>
+                  </button>
+                ))}
+                {!portExcursions.length ? (
+                  <p className="text-sm text-muted-foreground">
+                    No published tours in this port yet.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            {/* Step 3 — day and time */}
+            <div>
+              <p className="eyebrow text-brass">Step 3 — Day &amp; time</p>
+              <div className="mt-3 space-y-2">
+                {portCalls.map((call) => {
+                  const seats = selectedExcursion
+                    ? seatsFor(selectedExcursion.id, call.call_date)
+                    : undefined;
+                  const soldOut = typeof seats === "number" && seats < form.partySize;
+                  return (
+                    <button
+                      key={call.id}
+                      type="button"
+                      disabled={closed || soldOut}
+                      onClick={() => setForm((prev) => ({ ...prev, portCallId: call.id }))}
+                      className={`flex w-full flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors disabled:opacity-50 ${
+                        form.portCallId === call.id
+                          ? "border-brass bg-brass/10"
+                          : "border-border hover:border-brass/60"
+                      }`}
+                    >
+                      <span>
+                        {formatDate(call.call_date)} · in port {shortTime(call.arrival_time)} –{" "}
+                        {shortTime(call.departure_time)}
+                        {call.sailings?.name ? ` · ${call.sailings.name}` : ""}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {typeof seats === "number"
+                          ? soldOut
+                            ? "Not enough places"
+                            : `${seats} place(s) left`
+                          : ""}
+                      </span>
+                    </button>
+                  );
+                })}
+                {!portCalls.length ? (
+                  <p className="text-sm text-muted-foreground">
+                    No upcoming calls at this port on your sailing.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
@@ -259,9 +451,12 @@ function ManageBookingPage() {
               className="mt-2"
             />
             <p className="mt-2 text-xs text-muted-foreground">
-              New total:{" "}
-              {formatMoney(unitPrice * form.partySize + extrasTotalForParty, booking.currency)}
-              {extras.length ? " (extras included)" : ""}
+              New total: {formatMoney(newTotal, currency)}
+              {excursionChanged
+                ? " — switching tour removes the previously booked extras"
+                : extras.length
+                  ? " (extras included)"
+                  : ""}
             </p>
           </div>
           <div>
@@ -347,8 +542,8 @@ function ManageBookingPage() {
           <ul className="mt-5 space-y-3 text-sm text-muted-foreground">
             {(query.data?.history ?? []).map((h) => (
               <li key={h.id} className="border-b border-border pb-3">
-                {formatDate(h.created_at)} — {h.field.replace(/_/g, " ")}:{" "}
-                {h.old_value ?? "—"} → {h.new_value ?? "—"}
+                {formatDate(h.created_at)} — {h.field.replace(/_/g, " ")}: {h.old_value ?? "—"} →{" "}
+                {h.new_value ?? "—"}
                 {h.note ? ` (${h.note})` : ""}
               </li>
             ))}
