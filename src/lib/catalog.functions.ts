@@ -187,6 +187,7 @@ export const getExcursion = createServerFn({ method: "POST" })
 
 export const getHomeShowcase = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = createPublicClient();
+  const today = new Date().toISOString().slice(0, 10);
   const [sailings, excursions, ports] = await Promise.all([
     supabase
       .from("sailings")
@@ -194,6 +195,7 @@ export const getHomeShowcase = createServerFn({ method: "GET" }).handler(async (
         "id, name, slug, region, departure_date, arrival_date, nights, starting_price, description, ships!inner(name, slug, cruise_lines!inner(name, slug))",
       )
       .eq("is_published", true)
+      .gte("departure_date", today)
       .order("departure_date")
       .limit(3),
     supabase
