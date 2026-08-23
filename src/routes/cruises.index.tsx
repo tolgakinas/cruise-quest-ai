@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Anchor, CalendarDays, Ship, Search } from "lucide-react";
 import { getSailing, getSearchFacets, searchSailings } from "@/lib/catalog.functions";
 import { SailingPortExplorer } from "@/components/sailing-port-explorer";
+import { FreshnessBanner } from "@/components/data-freshness";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -335,6 +336,11 @@ function CruiseSearchPage() {
                     </Link>
                   </Button>
                 </div>
+                <FreshnessBanner
+                  className="mt-5"
+                  updatedAt={detail.data.freshness?.updatedAt}
+                  source={detail.data.freshness?.source}
+                />
                 <div className="rule-brass mt-6 mb-10" />
                 <SailingPortExplorer
                   calls={detail.data.calls}

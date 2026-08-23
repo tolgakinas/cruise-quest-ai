@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Anchor, CheckCircle2, Clock, MapPin, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FreshnessInline, useRelativeTime } from "@/components/data-freshness";
 import { formatDate, formatDuration, formatMoney, hoursAshore, shortTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ export type PortCall = {
   arrival_time: string | null;
   departure_time: string | null;
   is_sea_day: boolean | null;
+  updated_at?: string | null;
   ports: Port;
 };
 
@@ -55,6 +57,7 @@ export function SailingPortExplorer({
   const selected = portCalls.find((c) => c.id === selectedCallId) ?? portCalls[0];
   const portExcursions = selected ? excursions.filter((e) => e.port_id === selected.ports?.id) : [];
   const window = selected ? hoursAshore(selected.arrival_time, selected.departure_time) : null;
+  const selectedUpdated = useRelativeTime(selected?.updated_at);
 
   return (
     <div className="grid gap-10 lg:grid-cols-[22rem_1fr]">
@@ -92,12 +95,15 @@ export function SailingPortExplorer({
                   </div>
                   <p className="mt-1 font-display text-lg">{isSea ? "At sea" : call.ports?.name}</p>
                   {!isSea ? (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {call.ports?.country}
-                      {call.arrival_time || call.departure_time
-                        ? ` · ${shortTime(call.arrival_time)} – ${shortTime(call.departure_time)}`
-                        : ""}
-                    </p>
+                    <>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {call.ports?.country}
+                        {call.arrival_time || call.departure_time
+                          ? ` · ${shortTime(call.arrival_time)} – ${shortTime(call.departure_time)}`
+                          : ""}
+                      </p>
+                      <FreshnessInline className="mt-1.5" updatedAt={call.updated_at} />
+                    </>
                   ) : null}
                 </button>
               </li>
@@ -119,6 +125,15 @@ export function SailingPortExplorer({
                   In port {shortTime(selected.arrival_time)} – {shortTime(selected.departure_time)}
                   {window ? ` · ${window.toFixed(1)} hours ashore` : ""}
                 </p>
+                {selectedUpdated ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Arrival &amp; departure times as of{" "}
+                    {selected.updated_at
+                      ? new Date(selected.updated_at).toLocaleString()
+                      : selectedUpdated}{" "}
+                    ({selectedUpdated})
+                  </p>
+                ) : null}
               </div>
               {selected.ports ? (
                 <Button asChild variant="outline" className="border-brass/50">

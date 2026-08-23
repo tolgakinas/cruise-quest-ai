@@ -3,6 +3,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Clock, MapPin } from "lucide-react";
 import { getPort } from "@/lib/catalog.functions";
 import { Button } from "@/components/ui/button";
+import { FreshnessInline } from "@/components/data-freshness";
 import { formatDate, formatDuration, formatMoney, shortTime } from "@/lib/format";
 
 const portQuery = (slug: string) =>
@@ -138,6 +139,7 @@ function PortPage() {
                       <MapPin className="size-3.5 text-brass" />
                       {shortTime(call.arrival_time)} – {shortTime(call.departure_time)}
                     </p>
+                    <FreshnessInline className="mt-1.5 block" updatedAt={call.updated_at} />
                   </li>
                 ))}
               </ul>

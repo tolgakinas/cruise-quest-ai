@@ -4,6 +4,7 @@ import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { Anchor, Clock, MapPin, Ship, TriangleAlert, CheckCircle2 } from "lucide-react";
 import { getSailing } from "@/lib/catalog.functions";
 import { Button } from "@/components/ui/button";
+import { FreshnessBanner, FreshnessInline, useRelativeTime } from "@/components/data-freshness";
 import {
   formatDate,
   formatDuration,
@@ -62,10 +63,11 @@ function SailingPage() {
   const calls = data?.calls ?? [];
   const portCalls = calls.filter((c) => !c.is_sea_day && c.ports);
   const [selectedCallId, setSelectedCallId] = useState<string | null>(portCalls[0]?.id ?? null);
+  const selected = portCalls.find((c) => c.id === selectedCallId) ?? portCalls[0];
+  const selectedUpdated = useRelativeTime(selected?.updated_at);
 
   if (!data) return null;
   const { sailing, excursions } = data;
-  const selected = portCalls.find((c) => c.id === selectedCallId) ?? portCalls[0];
   const portExcursions = selected
     ? excursions.filter((e) => e.port_id === selected.ports?.id)
     : [];
@@ -89,6 +91,12 @@ function SailingPage() {
             <span>{sailing.nights} nights</span>
             <span>{portCalls.length} ports of call</span>
           </div>
+          <FreshnessBanner
+            className="mt-6 max-w-3xl"
+            tone="dark"
+            updatedAt={data.freshness?.updatedAt}
+            source={data.freshness?.source}
+          />
         </div>
       </section>
 
@@ -130,12 +138,15 @@ function SailingPage() {
                         {isSea ? "At sea" : call.ports?.name}
                       </p>
                       {!isSea ? (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {call.ports?.country}
-                          {call.arrival_time || call.departure_time
-                            ? ` · ${shortTime(call.arrival_time)} – ${shortTime(call.departure_time)}`
-                            : ""}
-                        </p>
+                        <>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {call.ports?.country}
+                            {call.arrival_time || call.departure_time
+                              ? ` · ${shortTime(call.arrival_time)} – ${shortTime(call.departure_time)}`
+                              : ""}
+                          </p>
+                          <FreshnessInline className="mt-1.5" updatedAt={call.updated_at} />
+                        </>
                       ) : null}
                     </button>
                   </li>
@@ -159,6 +170,15 @@ function SailingPage() {
                       In port {shortTime(selected.arrival_time)} – {shortTime(selected.departure_time)}
                       {window ? ` · ${window.toFixed(1)} hours ashore` : ""}
                     </p>
+                    {selectedUpdated ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Arrival &amp; departure times as of{" "}
+                        {selected.updated_at
+                          ? new Date(selected.updated_at).toLocaleString()
+                          : selectedUpdated}{" "}
+                        ({selectedUpdated})
+                      </p>
+                    ) : null}
                   </div>
                   {selected.ports ? (
                     <Button asChild variant="outline" className="border-brass/50">

@@ -74,7 +74,7 @@ export const getSailing = createServerFn({ method: "POST" })
     const { data: sailing, error } = await supabase
       .from("sailings")
       .select(
-        "id, name, slug, region, departure_date, arrival_date, nights, starting_price, description, ships!inner(id, name, slug, capacity, year_built, description, cruise_lines!inner(id, name, slug, description))",
+        "id, name, slug, region, departure_date, arrival_date, nights, starting_price, description, source, updated_at, ships!inner(id, name, slug, capacity, year_built, description, cruise_lines!inner(id, name, slug, description))",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
@@ -85,7 +85,7 @@ export const getSailing = createServerFn({ method: "POST" })
     const { data: calls } = await supabase
       .from("sailing_port_calls")
       .select(
-        "id, day_number, call_date, arrival_time, departure_time, is_sea_day, notes, ports(id, name, slug, country, region, description)",
+        "id, day_number, call_date, arrival_time, departure_time, is_sea_day, notes, updated_at, ports(id, name, slug, country, region, description)",
       )
       .eq("sailing_id", sailing.id)
       .order("day_number");
@@ -102,7 +102,15 @@ export const getSailing = createServerFn({ method: "POST" })
           .order("price")
       : { data: [] };
 
-    return { sailing, calls: calls ?? [], excursions: excursions ?? [] };
+    const timestamps = [sailing.updated_at, ...(calls ?? []).map((c) => c.updated_at)]
+      .filter((t): t is string => Boolean(t))
+      .sort();
+    const freshness = {
+      updatedAt: timestamps.length ? timestamps[timestamps.length - 1]! : sailing.updated_at,
+      source: sailing.source,
+    };
+
+    return { sailing, calls: calls ?? [], excursions: excursions ?? [], freshness };
   });
 
 export const getPort = createServerFn({ method: "POST" })
@@ -128,7 +136,7 @@ export const getPort = createServerFn({ method: "POST" })
       supabase
         .from("sailing_port_calls")
         .select(
-          "id, day_number, call_date, arrival_time, departure_time, sailings!inner(id, name, slug, region, is_published)",
+          "id, day_number, call_date, arrival_time, departure_time, updated_at, sailings!inner(id, name, slug, region, is_published, source, updated_at)",
         )
         .eq("port_id", port.id)
         .order("call_date"),
