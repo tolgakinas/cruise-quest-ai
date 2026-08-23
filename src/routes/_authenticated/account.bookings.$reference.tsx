@@ -185,6 +185,46 @@ function ManageBookingPage() {
         </div>
       ) : null}
 
+      {extras.length ? (
+        <div className="mt-10">
+          <h2 className="font-display text-2xl">Extras on this reservation</h2>
+          <div className="rule-brass mt-4" />
+          <ul className="mt-5 space-y-3 text-sm">
+            {extras.map((extra) => (
+              <li key={extra.id} className="flex justify-between gap-4 border-b border-border pb-3">
+                <span>
+                  {extra.name}
+                  {extra.quantity > 1 ? ` × ${extra.quantity}` : ""}
+                </span>
+                <span>{formatMoney(extra.line_total, extra.currency)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {refundRequests.length ? (
+        <div className="mt-10 rounded-lg border border-brass/40 bg-ivory/60 p-5">
+          <p className="eyebrow text-brass">Refund requests</p>
+          <ul className="mt-4 space-y-3 text-sm">
+            {refundRequests.map((request) => (
+              <li key={request.id} className="flex flex-wrap items-baseline justify-between gap-3">
+                <span>
+                  {formatDate(request.created_at)} · {formatMoney(request.amount, request.currency)}
+                  {request.admin_note ? ` — ${request.admin_note}` : ""}
+                </span>
+                <Badge variant="outline">{request.status}</Badge>
+              </li>
+            ))}
+          </ul>
+          {pendingRefund ? (
+            <p className="mt-4 text-xs text-muted-foreground">
+              Our reservations team reviews refunds within one business day.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <form onSubmit={save} className="mt-10 space-y-6">
         <div>
           <Label htmlFor="portCallId">Tour date</Label>
