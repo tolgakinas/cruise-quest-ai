@@ -54,11 +54,16 @@ export const searchSailings = createServerFn({ method: "POST" })
 
 export const getSearchFacets = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = createPublicClient();
+  const today = new Date().toISOString().slice(0, 10);
   const [lines, ships, ports, sailings] = await Promise.all([
     supabase.from("cruise_lines").select("id, name, slug").order("name"),
     supabase.from("ships").select("id, name, slug, cruise_line_id").order("name"),
     supabase.from("ports").select("id, name, slug, country, region").order("name"),
-    supabase.from("sailings").select("region").eq("is_published", true),
+    supabase
+      .from("sailings")
+      .select("region")
+      .eq("is_published", true)
+      .gte("departure_date", today),
   ]);
   const regions = [...new Set((sailings.data ?? []).map((s) => s.region))].sort();
   return {
