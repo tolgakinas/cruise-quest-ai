@@ -3,6 +3,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Clock, MapPin } from "lucide-react";
 import { getPort } from "@/lib/catalog.functions";
 import { Button } from "@/components/ui/button";
+import { FreshnessInline } from "@/components/data-freshness";
 import { formatDate, formatDuration, formatMoney, shortTime } from "@/lib/format";
 
 const portQuery = (slug: string) =>
