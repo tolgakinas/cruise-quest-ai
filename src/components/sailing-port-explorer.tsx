@@ -57,6 +57,7 @@ export function SailingPortExplorer({
   const selected = portCalls.find((c) => c.id === selectedCallId) ?? portCalls[0];
   const portExcursions = selected ? excursions.filter((e) => e.port_id === selected.ports?.id) : [];
   const window = selected ? hoursAshore(selected.arrival_time, selected.departure_time) : null;
+  const selectedUpdated = useRelativeTime(selected?.updated_at);
 
   return (
     <div className="grid gap-10 lg:grid-cols-[22rem_1fr]">
