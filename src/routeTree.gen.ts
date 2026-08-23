@@ -27,6 +27,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin/audit-log'
 import { Route as AuthenticatedAdminBookingsRouteImport } from './routes/_authenticated/admin/bookings'
 import { Route as AuthenticatedAdminExcursionsRouteImport } from './routes/_authenticated/admin/excursions'
+import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin/notifications'
 import { Route as AuthenticatedAdminPortsRouteImport } from './routes/_authenticated/admin/ports'
 import { Route as AuthenticatedAdminRefundsRouteImport } from './routes/_authenticated/admin/refunds'
 import { Route as AuthenticatedAdminSailingsRouteImport } from './routes/_authenticated/admin/sailings'
@@ -130,6 +131,12 @@ const AuthenticatedAdminExcursionsRoute =
     path: '/excursions',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminNotificationsRoute =
+  AuthenticatedAdminNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminPortsRoute = AuthenticatedAdminPortsRouteImport.update({
   id: '/ports',
   path: '/ports',
@@ -193,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/admin/excursions': typeof AuthenticatedAdminExcursionsRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/ports': typeof AuthenticatedAdminPortsRoute
   '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/admin/sailings': typeof AuthenticatedAdminSailingsRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/admin/excursions': typeof AuthenticatedAdminExcursionsRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/ports': typeof AuthenticatedAdminPortsRoute
   '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/admin/sailings': typeof AuthenticatedAdminSailingsRoute
@@ -247,6 +256,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/_authenticated/admin/excursions': typeof AuthenticatedAdminExcursionsRoute
+  '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/_authenticated/admin/ports': typeof AuthenticatedAdminPortsRoute
   '/_authenticated/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/_authenticated/admin/sailings': typeof AuthenticatedAdminSailingsRoute
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/admin/audit-log'
     | '/admin/bookings'
     | '/admin/excursions'
+    | '/admin/notifications'
     | '/admin/ports'
     | '/admin/refunds'
     | '/admin/sailings'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/admin/audit-log'
     | '/admin/bookings'
     | '/admin/excursions'
+    | '/admin/notifications'
     | '/admin/ports'
     | '/admin/refunds'
     | '/admin/sailings'
@@ -329,6 +341,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/audit-log'
     | '/_authenticated/admin/bookings'
     | '/_authenticated/admin/excursions'
+    | '/_authenticated/admin/notifications'
     | '/_authenticated/admin/ports'
     | '/_authenticated/admin/refunds'
     | '/_authenticated/admin/sailings'
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminExcursionsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/notifications': {
+      id: '/_authenticated/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AuthenticatedAdminNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/ports': {
       id: '/_authenticated/admin/ports'
       path: '/ports'
@@ -545,6 +565,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAuditLogRoute: typeof AuthenticatedAdminAuditLogRoute
   AuthenticatedAdminBookingsRoute: typeof AuthenticatedAdminBookingsRoute
   AuthenticatedAdminExcursionsRoute: typeof AuthenticatedAdminExcursionsRoute
+  AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
   AuthenticatedAdminPortsRoute: typeof AuthenticatedAdminPortsRoute
   AuthenticatedAdminRefundsRoute: typeof AuthenticatedAdminRefundsRoute
   AuthenticatedAdminSailingsRoute: typeof AuthenticatedAdminSailingsRoute
@@ -557,6 +578,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAuditLogRoute: AuthenticatedAdminAuditLogRoute,
     AuthenticatedAdminBookingsRoute: AuthenticatedAdminBookingsRoute,
     AuthenticatedAdminExcursionsRoute: AuthenticatedAdminExcursionsRoute,
+    AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
     AuthenticatedAdminPortsRoute: AuthenticatedAdminPortsRoute,
     AuthenticatedAdminRefundsRoute: AuthenticatedAdminRefundsRoute,
     AuthenticatedAdminSailingsRoute: AuthenticatedAdminSailingsRoute,
