@@ -128,3 +128,57 @@ export const discoverImportUrls = createServerFn({ method: "POST" })
     const urls = await discoverTimetableUrls(data.url, 25);
     return { urls };
   });
+
+/** Admin: maps cruisemapper.com and queues every cruise line + ship page. */
+export const discoverCruisemapper = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { discoverCruisemapperCatalog } = await import("./cruisemapper.server");
+    return discoverCruisemapperCatalog();
+  });
+
+/** Admin: processes the next batch of queued CruiseMapper pages. */
+export const runCruisemapperCatalogBatch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ limit: z.number().int().min(1).max(40).optional() }).parse(input ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { runCruisemapperBatch } = await import("./cruisemapper.server");
+    return runCruisemapperBatch({ limit: data.limit ?? 15, trigger: "admin" });
+  });
+
+/** Admin: CruiseMapper queue progress + catalogue size. */
+export const getCruisemapperStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const s = context.supabase;
+    const [queued, pending, failed, lines, ships, sailings] = await Promise.all([
+      s.from("import_sources").select("id", { count: "exact", head: true }).eq("parser", "cruisemapper"),
+      s
+        .from("import_sources")
+        .select("id", { count: "exact", head: true })
+        .eq("parser", "cruisemapper")
+        .eq("is_active", true)
+        .is("last_run_at", null),
+      s
+        .from("import_sources")
+        .select("id", { count: "exact", head: true })
+        .eq("parser", "cruisemapper")
+        .eq("is_active", false),
+      s.from("cruise_lines").select("id", { count: "exact", head: true }),
+      s.from("ships").select("id", { count: "exact", head: true }),
+      s.from("sailings").select("id", { count: "exact", head: true }),
+    ]);
+    return {
+      queued: queued.count ?? 0,
+      pending: pending.count ?? 0,
+      givenUp: failed.count ?? 0,
+      lines: lines.count ?? 0,
+      ships: ships.count ?? 0,
+      sailings: sailings.count ?? 0,
+    };
+  });

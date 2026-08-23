@@ -21,7 +21,8 @@ export const Route = createFileRoute("/api/public/import-timetables")({
         const { data: sources, error } = await supabaseAdmin
           .from("import_sources")
           .select("id, label, url, cruise_line_slug")
-          .eq("is_active", true);
+          .eq("is_active", true)
+          .neq("parser", "cruisemapper");
         if (error) return new Response(error.message, { status: 500 });
 
         const results: { label: string; ok: boolean; detail: string }[] = [];
@@ -47,7 +48,17 @@ export const Route = createFileRoute("/api/public/import-timetables")({
           }
         }
 
-        return Response.json({ ran: results.length, results });
+        // Grind through the CruiseMapper queue one batch per run so the whole
+        // catalogue fills in over time and then stays refreshed.
+        let cruisemapper: unknown = null;
+        try {
+          const { runCruisemapperBatch } = await import("@/lib/cruisemapper.server");
+          cruisemapper = await runCruisemapperBatch({ limit: 12, trigger: "cron" });
+        } catch (err) {
+          cruisemapper = { error: err instanceof Error ? err.message : "batch failed" };
+        }
+
+        return Response.json({ ran: results.length, results, cruisemapper });
       },
     },
   },

@@ -2,13 +2,16 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CloudDownload, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
+import { CloudDownload, Plus, RefreshCw, Search, Ship, Trash2 } from "lucide-react";
 import {
   getImportOverview,
   upsertImportSource,
   deleteImportSource,
   runTimetableImport,
   discoverImportUrls,
+  discoverCruisemapper,
+  runCruisemapperCatalogBatch,
+  getCruisemapperStatus,
 } from "@/lib/admin-import.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,13 +62,43 @@ function AdminImportsPage() {
   const [form, setForm] = useState<SourceForm | null>(null);
   const [adHocUrl, setAdHocUrl] = useState("");
   const [discovered, setDiscovered] = useState<string[]>([]);
+  const [batchSize, setBatchSize] = useState(15);
 
   const overview = useQuery({ queryKey: ["admin-imports"], queryFn: () => getImportOverview() });
+  const cmStatus = useQuery({
+    queryKey: ["admin-cruisemapper"],
+    queryFn: () => getCruisemapperStatus(),
+  });
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["admin-imports"] });
+    void queryClient.invalidateQueries({ queryKey: ["admin-cruisemapper"] });
     void queryClient.invalidateQueries({ queryKey: ["admin-catalog"] });
   };
+
+  const discoverCatalog = useMutation({
+    mutationFn: () => discoverCruisemapper({}),
+    onSuccess: (res) => {
+      toast.success(
+        `${res.linesQueued} cruise lines and ${res.shipsQueued} ships found on CruiseMapper`,
+      );
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const runBatch = useMutation({
+    mutationFn: (limit: number) => runCruisemapperCatalogBatch({ data: { limit } }),
+    onSuccess: (res) => {
+      toast.success(
+        `${res.processed} pages scraped — +${res.linesCreated} lines, +${res.shipsCreated} ships, +${res.sailingsCreated} sailings. ${res.remaining} pages still queued.`,
+      );
+      if (res.failed) toast.warning(`${res.failed} page(s) failed and were skipped`);
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const save = useMutation({
     mutationFn: (input: SourceForm) =>
@@ -142,6 +175,84 @@ function AdminImportsPage() {
           <Plus className="mr-2 h-4 w-4" /> Add source
         </Button>
       </header>
+
+      <section className="rounded-lg border border-brass/40 bg-brass/5 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="flex items-center gap-2 font-display text-xl">
+              <Ship className="h-5 w-5 text-brass" /> CruiseMapper full catalogue
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Discovery queues every cruise line and ship page on cruisemapper.com. Each batch
+              scrapes the next queued pages — lines, ships and their sailing timetables with port
+              call times. The scheduled refresh keeps working through the queue every six hours.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
+            <div>
+              <Label htmlFor="batch" className="text-xs">
+                Pages per batch
+              </Label>
+              <Input
+                id="batch"
+                type="number"
+                min={1}
+                max={40}
+                value={batchSize}
+                onChange={(e) => setBatchSize(Math.min(40, Math.max(1, Number(e.target.value) || 1)))}
+                className="w-24"
+              />
+            </div>
+            <Button
+              variant="outline"
+              disabled={discoverCatalog.isPending}
+              onClick={() => discoverCatalog.mutate()}
+            >
+              <Search className="mr-2 h-4 w-4" />
+              {discoverCatalog.isPending ? "Discovering…" : "Rediscover catalogue"}
+            </Button>
+            <Button
+              disabled={runBatch.isPending}
+              onClick={() => runBatch.mutate(batchSize)}
+              className="bg-brass text-brass-foreground hover:bg-brass-soft"
+            >
+              <CloudDownload className="mr-2 h-4 w-4" />
+              {runBatch.isPending ? "Scraping…" : "Run a batch now"}
+            </Button>
+          </div>
+        </div>
+
+        <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {[
+            { label: "Pages queued", value: cmStatus.data?.queued ?? 0 },
+            { label: "Not scraped yet", value: cmStatus.data?.pending ?? 0 },
+            { label: "Skipped pages", value: cmStatus.data?.givenUp ?? 0 },
+            { label: "Cruise lines", value: cmStatus.data?.lines ?? 0 },
+            { label: "Ships", value: cmStatus.data?.ships ?? 0 },
+            { label: "Sailings", value: cmStatus.data?.sailings ?? 0 },
+          ].map((stat) => (
+            <div key={stat.label}>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">{stat.label}</dt>
+              <dd className="font-display text-2xl">{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        {runBatch.data?.pages?.length ? (
+          <ul className="mt-5 max-h-56 space-y-1 overflow-auto text-xs">
+            {runBatch.data.pages.map((page, i) => (
+              <li key={`${page.label}-${i}`} className="flex gap-2 border-b border-border/40 pb-1">
+                <Badge variant={page.ok ? "default" : "destructive"} className="shrink-0">
+                  {page.ok ? "ok" : "error"}
+                </Badge>
+                <span className="truncate">{page.label}</span>
+                <span className="ml-auto shrink-0 text-muted-foreground">{page.detail}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
+
 
       <section className="rounded-lg border border-border/70 p-5">
         <h2 className="font-display text-xl">One-off scrape</h2>
