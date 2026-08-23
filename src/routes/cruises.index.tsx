@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Anchor, CalendarDays, Ship, Search } from "lucide-react";
 import { getSailing, getSearchFacets, searchSailings } from "@/lib/catalog.functions";
 import { SailingPortExplorer } from "@/components/sailing-port-explorer";
+import { FreshnessBanner } from "@/components/data-freshness";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
