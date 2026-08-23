@@ -21,6 +21,7 @@ import { Route as ExcursionsSlugRouteImport } from './routes/excursions.$slug'
 import { Route as PortsSlugRouteImport } from './routes/ports.$slug'
 import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin/audit-log'
 import { Route as AuthenticatedBookingSlugRouteImport } from './routes/_authenticated/booking.$slug'
+import { Route as AuthenticatedBookingReturnRouteImport } from './routes/_authenticated/booking.return'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,6 +84,12 @@ const AuthenticatedBookingSlugRoute =
     path: '/booking/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBookingReturnRoute =
+  AuthenticatedBookingReturnRouteImport.update({
+    id: '/booking/return',
+    path: '/booking/return',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/cruises/': typeof CruisesIndexRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
+  '/booking/return': typeof AuthenticatedBookingReturnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,6 +117,7 @@ export interface FileRoutesByTo {
   '/cruises': typeof CruisesIndexRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
+  '/booking/return': typeof AuthenticatedBookingReturnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +133,7 @@ export interface FileRoutesById {
   '/cruises/': typeof CruisesIndexRoute
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/booking/$slug': typeof AuthenticatedBookingSlugRoute
+  '/_authenticated/booking/return': typeof AuthenticatedBookingReturnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/cruises/'
     | '/admin/audit-log'
     | '/booking/$slug'
+    | '/booking/return'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/cruises'
     | '/admin/audit-log'
     | '/booking/$slug'
+    | '/booking/return'
   id:
     | '__root__'
     | '/'
@@ -166,6 +178,7 @@ export interface FileRouteTypes {
     | '/cruises/'
     | '/_authenticated/admin/audit-log'
     | '/_authenticated/booking/$slug'
+    | '/_authenticated/booking/return'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/booking/return': {
+      id: '/_authenticated/booking/return'
+      path: '/booking/return'
+      fullPath: '/booking/return'
+      preLoaderRoute: typeof AuthenticatedBookingReturnRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -273,12 +293,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAdminAuditLogRoute: typeof AuthenticatedAdminAuditLogRoute
   AuthenticatedBookingSlugRoute: typeof AuthenticatedBookingSlugRoute
+  AuthenticatedBookingReturnRoute: typeof AuthenticatedBookingReturnRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAdminAuditLogRoute: AuthenticatedAdminAuditLogRoute,
   AuthenticatedBookingSlugRoute: AuthenticatedBookingSlugRoute,
+  AuthenticatedBookingReturnRoute: AuthenticatedBookingReturnRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
