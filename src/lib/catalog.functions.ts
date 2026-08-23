@@ -18,6 +18,7 @@ export const searchSailings = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => SearchInput.parse(input ?? {}))
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
+    const today = new Date().toISOString().slice(0, 10);
 
     let portSailingIds: string[] | null = null;
     if (data.port) {
@@ -35,6 +36,7 @@ export const searchSailings = createServerFn({ method: "POST" })
         "id, name, slug, region, departure_date, arrival_date, nights, starting_price, description, ships!inner(id, name, slug, cruise_lines!inner(id, name, slug))",
       )
       .eq("is_published", true)
+      .gte("departure_date", today)
       .order("departure_date", { ascending: true });
 
     if (data.region) query = query.eq("region", data.region);
