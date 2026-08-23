@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Anchor, CalendarDays, Ship, Search } from "lucide-react";
-import { getSearchFacets, searchSailings } from "@/lib/catalog.functions";
+import { getSailing, getSearchFacets, searchSailings } from "@/lib/catalog.functions";
+import { SailingPortExplorer } from "@/components/sailing-port-explorer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 
 export const Route = createFileRoute("/cruises/")({
   validateSearch: (search?: Record<string, unknown>): {
