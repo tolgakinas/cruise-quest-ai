@@ -107,7 +107,7 @@ export function AiConcierge() {
                       {turn.links.map((link) => (
                         <Link
                           key={link.href + link.label}
-                          to={link.href}
+                          to={link.href as never}
                           onClick={() => setOpen(false)}
                           className="rounded-full border border-brass/60 px-3 py-1 text-xs text-brass transition-colors hover:bg-brass hover:text-brass-foreground"
                         >
