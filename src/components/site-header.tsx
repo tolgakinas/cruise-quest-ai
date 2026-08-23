@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
 import { BrandLogo } from "./brand-logo";
+import { NotificationBell } from "./notification-bell";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
@@ -46,6 +47,7 @@ export function SiteHeader() {
 
 
         <div className="hidden items-center gap-3 md:flex">
+          {user ? <NotificationBell /> : null}
           {user ? (
             <Button asChild variant="outline" className="border-brass/60 bg-transparent text-brass hover:bg-brass hover:text-brass-foreground">
               <Link to="/account">My voyage</Link>

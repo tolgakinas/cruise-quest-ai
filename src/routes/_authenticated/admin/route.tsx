@@ -4,6 +4,7 @@ import {
   BanknoteArrowDown,
   CalendarClock,
   LayoutDashboard,
+  Mail,
   MapPin,
   ScrollText,
   Ship,
@@ -26,6 +27,7 @@ const links: { to: string; label: string; icon: typeof Ticket; exact?: boolean }
   { to: "/admin/bookings", label: "Reservations", icon: CalendarClock },
   { to: "/admin/refunds", label: "Refunds", icon: BanknoteArrowDown },
   { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/notifications", label: "Notifications", icon: Mail },
   { to: "/admin/audit-log", label: "Audit log", icon: ScrollText },
 ];
 
