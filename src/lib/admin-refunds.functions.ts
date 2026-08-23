@@ -5,8 +5,6 @@ import { createStripeClient, getStripeErrorMessage, type StripeEnv } from "@/lib
 
 const EnvSchema = z.enum(["sandbox", "live"]);
 
-type AuthedContext = { supabase: { from: (table: never) => never }; userId: string };
-
 async function assertAdmin(context: unknown) {
   const { supabase, userId } = context as {
     supabase: {
@@ -41,7 +39,7 @@ export const listRefundRequests = createServerFn({ method: "POST" })
       .parse(input ?? {}),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase as never, context.userId);
+    await assertAdmin(context);
 
     let query = context.supabase
       .from("refund_requests")
@@ -80,7 +78,7 @@ export const decideRefundRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => DecideInput.parse(input))
   .handler(async ({ data, context }): Promise<DecideResult> => {
-    await assertAdmin(context.supabase as never, context.userId);
+    await assertAdmin(context);
 
     const { data: request } = await context.supabase
       .from("refund_requests")
