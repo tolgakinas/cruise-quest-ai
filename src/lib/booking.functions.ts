@@ -518,7 +518,16 @@ export const getBookingChangeOptions = createServerFn({ method: "POST" })
 
     const { data: calls } = await callsQuery;
     const portIds = [...new Set((calls ?? []).map((c) => c.port_id).filter(Boolean) as string[])];
-    if (!portIds.length) return { ports: [], calls: [], excursions: [], seats: {} };
+    if (!portIds.length) {
+      return {
+        ports: [] as { id: string; name: string; slug: string; country: string }[],
+        calls: (calls ?? []).slice(0, 0),
+        excursions: [] as NonNullable<Awaited<ReturnType<typeof loadExcursionsShape>>>,
+        seats: {} as Record<string, number>,
+        currentExcursionId: booking.excursion_id,
+        currentPortCallId: booking.port_call_id,
+      };
+    }
 
     const { data: excursions } = await supabase
       .from("excursions")
