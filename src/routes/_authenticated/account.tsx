@@ -27,11 +27,14 @@ function AccountPage() {
       <p className="mt-4 text-muted-foreground">Signed in as {user?.email}</p>
       <div className="rule-brass mt-8" />
       <p className="mt-8 text-muted-foreground">
-        Your bookings and excursion tickets will appear here.
+        Manage your shore excursion reservations, change dates or party size, and pay any balance.
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
+        <Button asChild className="bg-brass text-brass-foreground hover:bg-brass-soft">
+          <Link to="/account/bookings">My reservations</Link>
+        </Button>
         {isAdmin ? (
-          <Button asChild className="bg-brass text-brass-foreground hover:bg-brass-soft">
+          <Button asChild variant="outline">
             <Link to="/admin/audit-log">Admin audit log</Link>
           </Button>
         ) : null}
