@@ -27,14 +27,29 @@
    - Cruise line / gemi filtrelerinin artan veriyle çalıştığını doğrula; arama panelinde line ve gemi listeleri veritabanından geldiği için otomatik büyür.
    - Veri tazeliği göstergesi CruiseMapper kaynağını okunabilir etiketle gösterir ("CruiseMapper tarife verisi").
 
+## Tam kapsam: her line, her gemi, her tarife
+
+Hedef bölge sınırı yok — CruiseMapper'daki **tüm** cruise line'lar, tüm gemileri ve
+her geminin tarife (itinerary/schedule) sayfaları taranır.
+
+- **Kuyruk tabanlı tarama:** tek bir istek yüzlerce sayfayı çekemeyeceği için
+  `import_sources` tablosu keşfedilen her gemi tarife sayfası için bir satır
+  tutar (`is_active`, `last_run_at`). Keşif adımı kuyruğu doldurur, tarama adımı
+  kuyruğu en eskiden başlayarak partiler hâlinde işler.
+- **Partili çalışma:** her çalıştırma sabit sayıda sayfa işler (varsayılan 15,
+  admin ekranından ayarlanabilir), böylece worker zaman aşımına uğramaz.
+  Kuyruk bitene kadar tekrar tetiklenir.
+- **Otomatik ilerleme:** mevcut 6 saatlik cron her turda bir sonraki partiyi alır,
+  yani katalog kendi kendine tamamlanır ve sonrasında sürekli güncel kalır.
+- **Admin görünürlüğü:** `/admin/imports` ekranında "kuyrukta kalan sayfa",
+  "son tur sonucu" ve toplam line/gemi/sefer sayaçları gösterilir; "Şimdi bir
+  parti çalıştır" ve "Kataloğu yeniden keşfet" butonları eklenir.
+
 ## Teknik notlar
 
 - Yeni `src/lib/cruisemapper.server.ts`: Firecrawl map/scrape + AI çıkarımı + line/ship upsert; mevcut `firecrawlRequest` yardımcıları yeniden kullanılır (gateway/direct mod ayrımı korunur).
-- Yeni admin server fonksiyonu `runCatalogImport` (`admin-import.functions.ts`), `requireSupabaseAuth` + `assertAdmin` ile korunur.
-- `ships.capacity`, `year_built`, `image_url`, `cruise_lines.logo_url`/`description` alanları doldurulur; migration gerekmez.
-- Tarama sırayla ve limitli yapılır (worker zaman aşımı ve Firecrawl kredisi için); büyük taramalar birden fazla çalıştırmaya bölünebilir.
-- Firecrawl 402 (kredi bitti) ve 401 hataları admin ekranında net mesajla gösterilir.
-
-## Sorular yerine varsayımlar
-
-- İlk turda hedef: ~25-40 cruise line ve ~150+ gemi kaydı; tarife çekimi öncelikli olarak Akdeniz/Adriyatik/Kuzey Avrupa gemileri için yapılır (excursion satılan limanlarla örtüştüğü için).
+- Yeni admin server fonksiyonları (`admin-import.functions.ts`): `discoverCruisemapperCatalog` (keşif/kuyruk doldurma) ve `runCatalogBatch` (parti işleme); ikisi de `requireSupabaseAuth` + `assertAdmin` ile korunur.
+- `ships.capacity`, `year_built`, `image_url`, `cruise_lines.logo_url`/`description` alanları doldurulur.
+- Kuyruk için `import_sources` tablosuna küçük bir migration: `kind` (catalog/timetable) ve `ship_slug` kolonları + benzersiz `url` indeksi.
+- Firecrawl 402 (kredi bitti) ve 401 hataları admin ekranında net mesajla gösterilir; hatalı sayfa kuyrukta işaretlenir ve tarama diğer sayfalarla devam eder.
+- Tekrarlı çalıştırma duplikasyon yaratmaz: line/ship slug, sefer `(source, external_id)` bazlı upsert.
