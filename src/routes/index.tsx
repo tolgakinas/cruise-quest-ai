@@ -123,11 +123,12 @@ function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-          {data.sailings.map((sailing, index) => (
+          {data.sailings.map((sailing) => (
             <article key={sailing.id} className="group space-y-6">
               <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-muted shadow-lg">
                 <img
-                  src={regionImages[index % regionImages.length]}
+                  src={regionImage(sailing.region)}
+
                   alt={`${sailing.region} coastline`}
                   loading="lazy"
                   width={912}
