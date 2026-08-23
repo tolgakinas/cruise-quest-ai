@@ -239,7 +239,7 @@ function CruiseSearchPage() {
       <section className="mx-auto max-w-7xl px-5 py-16">
         {results.isLoading ? (
           <p className="text-muted-foreground">Reading the timetables…</p>
-        ) : (results.data ?? []).length === 0 ? (
+        ) : rows.length === 0 ? (
           <div className="rounded-lg border border-border p-10 text-center">
             <Anchor className="mx-auto size-8 text-brass" />
             <h2 className="mt-4 text-2xl">No sailings match those details</h2>
@@ -250,46 +250,102 @@ function CruiseSearchPage() {
         ) : (
           <>
             <div className="flex items-baseline justify-between">
-              <h2 className="text-2xl">{(results.data ?? []).length} sailings found</h2>
+              <h2 className="text-2xl">{rows.length} sailings found</h2>
               <p className="text-sm text-muted-foreground">Select a sailing to see its ports</p>
             </div>
             <div className="rule-brass mt-5" />
             <ul className="mt-8 divide-y divide-border">
-              {(results.data ?? []).map((s) => (
-                <li key={s.id} className="py-7">
-                  <div className="flex flex-wrap items-start justify-between gap-6">
-                    <div className="max-w-2xl">
-                      <p className="eyebrow text-brass">
-                        {s.ships.cruise_lines.name} · {s.region}
-                      </p>
-                      <h3 className="mt-2 text-2xl">
-                        <Link to="/cruises/$slug" params={{ slug: s.slug }} className="hover:text-brass">
-                          {s.name}
-                        </Link>
-                      </h3>
-                      <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
-                        <span className="inline-flex items-center gap-2">
-                          <Ship className="size-4 text-brass" /> {s.ships.name}
-                        </span>
-                        <span className="inline-flex items-center gap-2">
-                          <CalendarDays className="size-4 text-brass" />
-                          {formatDate(s.departure_date)} — {formatDate(s.arrival_date)}
-                        </span>
-                        <span>{s.nights} nights</span>
+              {rows.map((s) => {
+                const active = s.slug === selectedSlug;
+                return (
+                  <li key={s.id} className="py-7">
+                    <div className="flex flex-wrap items-start justify-between gap-6">
+                      <div className="max-w-2xl">
+                        <p className="eyebrow text-brass">
+                          {s.ships.cruise_lines.name} · {s.region}
+                        </p>
+                        <h3 className="mt-2 text-2xl">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSlug(s.slug)}
+                            className="text-left hover:text-brass"
+                          >
+                            {s.name}
+                          </button>
+                        </h3>
+                        <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
+                          <span className="inline-flex items-center gap-2">
+                            <Ship className="size-4 text-brass" /> {s.ships.name}
+                          </span>
+                          <span className="inline-flex items-center gap-2">
+                            <CalendarDays className="size-4 text-brass" />
+                            {formatDate(s.departure_date)} — {formatDate(s.arrival_date)}
+                          </span>
+                          <span>{s.nights} nights</span>
+                        </div>
                       </div>
+                      <Button
+                        onClick={() => setSelectedSlug(s.slug)}
+                        variant={active ? "outline" : "default"}
+                        className={
+                          active
+                            ? "border-brass text-brass"
+                            : "bg-brass text-brass-foreground hover:bg-brass-soft"
+                        }
+                      >
+                        {active ? "Selected" : "View ports & tours"}
+                      </Button>
                     </div>
-                    <Button asChild className="bg-brass text-brass-foreground hover:bg-brass-soft">
-                      <Link to="/cruises/$slug" params={{ slug: s.slug }}>
-                        View ports & tours
-                      </Link>
-                    </Button>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </>
         )}
       </section>
+
+      {selectedSlug ? (
+        <section id="selected-sailing" className="border-t border-border bg-muted/20">
+          <div className="mx-auto max-w-7xl px-5 py-14">
+            {detail.isLoading || !detail.data ? (
+              <p className="text-muted-foreground">Loading the itinerary…</p>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-end justify-between gap-5">
+                  <div>
+                    <p className="eyebrow text-brass">Selected cruise</p>
+                    <h2 className="mt-2 text-3xl md:text-4xl">{detail.data.sailing.name}</h2>
+                    <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
+                      <span className="inline-flex items-center gap-2">
+                        <Ship className="size-4 text-brass" />
+                        {detail.data.sailing.ships.cruise_lines.name} ·{" "}
+                        {detail.data.sailing.ships.name}
+                      </span>
+                      <span className="inline-flex items-center gap-2">
+                        <CalendarDays className="size-4 text-brass" />
+                        {formatDate(detail.data.sailing.departure_date)} —{" "}
+                        {formatDate(detail.data.sailing.arrival_date)}
+                      </span>
+                      <span>{detail.data.sailing.nights} nights</span>
+                    </div>
+                  </div>
+                  <Button asChild variant="outline" className="border-brass/50">
+                    <Link to="/cruises/$slug" params={{ slug: detail.data.sailing.slug }}>
+                      Full sailing page
+                    </Link>
+                  </Button>
+                </div>
+                <div className="rule-brass mt-6 mb-10" />
+                <SailingPortExplorer
+                  calls={detail.data.calls}
+                  excursions={detail.data.excursions}
+                />
+              </>
+            )}
+          </div>
+        </section>
+      ) : null}
+
     </div>
   );
 }
