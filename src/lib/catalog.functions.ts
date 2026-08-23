@@ -18,6 +18,7 @@ export const searchSailings = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => SearchInput.parse(input ?? {}))
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
+    const today = new Date().toISOString().slice(0, 10);
 
     let portSailingIds: string[] | null = null;
     if (data.port) {
@@ -35,6 +36,7 @@ export const searchSailings = createServerFn({ method: "POST" })
         "id, name, slug, region, departure_date, arrival_date, nights, starting_price, description, ships!inner(id, name, slug, cruise_lines!inner(id, name, slug))",
       )
       .eq("is_published", true)
+      .gte("departure_date", today)
       .order("departure_date", { ascending: true });
 
     if (data.region) query = query.eq("region", data.region);
@@ -52,11 +54,16 @@ export const searchSailings = createServerFn({ method: "POST" })
 
 export const getSearchFacets = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = createPublicClient();
+  const today = new Date().toISOString().slice(0, 10);
   const [lines, ships, ports, sailings] = await Promise.all([
     supabase.from("cruise_lines").select("id, name, slug").order("name"),
     supabase.from("ships").select("id, name, slug, cruise_line_id").order("name"),
     supabase.from("ports").select("id, name, slug, country, region").order("name"),
-    supabase.from("sailings").select("region").eq("is_published", true),
+    supabase
+      .from("sailings")
+      .select("region")
+      .eq("is_published", true)
+      .gte("departure_date", today),
   ]);
   const regions = [...new Set((sailings.data ?? []).map((s) => s.region))].sort();
   return {
@@ -117,6 +124,7 @@ export const getPort = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ slug: z.string() }).parse(input))
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
+    const today = new Date().toISOString().slice(0, 10);
     const { data: port } = await supabase
       .from("ports")
       .select("id, name, slug, country, region, description")
@@ -139,6 +147,7 @@ export const getPort = createServerFn({ method: "POST" })
           "id, day_number, call_date, arrival_time, departure_time, updated_at, sailings!inner(id, name, slug, region, is_published, source, updated_at)",
         )
         .eq("port_id", port.id)
+        .gte("call_date", today)
         .order("call_date"),
     ]);
 
@@ -153,6 +162,7 @@ export const getExcursion = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ slug: z.string() }).parse(input))
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
+    const today = new Date().toISOString().slice(0, 10);
     const { data: excursion } = await supabase
       .from("excursions")
       .select(
@@ -169,6 +179,7 @@ export const getExcursion = createServerFn({ method: "POST" })
         "id, call_date, arrival_time, departure_time, day_number, sailings!inner(id, name, slug, is_published)",
       )
       .eq("port_id", excursion.ports.id)
+      .gte("call_date", today)
       .order("call_date");
 
     return { excursion, calls: (calls ?? []).filter((c) => c.sailings?.is_published) };
@@ -176,6 +187,7 @@ export const getExcursion = createServerFn({ method: "POST" })
 
 export const getHomeShowcase = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = createPublicClient();
+  const today = new Date().toISOString().slice(0, 10);
   const [sailings, excursions, ports] = await Promise.all([
     supabase
       .from("sailings")
@@ -183,6 +195,7 @@ export const getHomeShowcase = createServerFn({ method: "GET" }).handler(async (
         "id, name, slug, region, departure_date, arrival_date, nights, starting_price, description, ships!inner(name, slug, cruise_lines!inner(name, slug))",
       )
       .eq("is_published", true)
+      .gte("departure_date", today)
       .order("departure_date")
       .limit(3),
     supabase
