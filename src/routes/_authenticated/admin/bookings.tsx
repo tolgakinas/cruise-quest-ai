@@ -120,8 +120,8 @@ function AdminBookingsPage() {
 
   const exportCsv = useMutation({
     mutationFn: () => exportBookingsCsv({ data: filters }),
-    onSuccess: (csv: string) => {
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    onSuccess: (result) => {
+      const blob = new Blob([result.csv], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
