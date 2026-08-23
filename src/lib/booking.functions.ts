@@ -518,21 +518,13 @@ export const getBookingChangeOptions = createServerFn({ method: "POST" })
 
     const { data: calls } = await callsQuery;
     const portIds = [...new Set((calls ?? []).map((c) => c.port_id).filter(Boolean) as string[])];
-    if (!portIds.length) {
-      return {
-        ports: [] as { id: string; name: string; slug: string; country: string }[],
-        calls: (calls ?? []).slice(0, 0),
-        excursions: [] as NonNullable<Awaited<ReturnType<typeof loadExcursionsShape>>>,
-        seats: {} as Record<string, number>,
-        currentExcursionId: booking.excursion_id,
-        currentPortCallId: booking.port_call_id,
-      };
+
     }
 
     const { data: excursions } = await supabase
       .from("excursions")
       .select("id, title, slug, price, currency, duration_minutes, capacity, category, port_id, image_url")
-      .in("port_id", portIds)
+      .in("port_id", portIds.length ? portIds : ["00000000-0000-0000-0000-000000000000"])
       .eq("is_published", true)
       .order("title");
 
@@ -540,7 +532,7 @@ export const getBookingChangeOptions = createServerFn({ method: "POST" })
     const { data: taken } = await supabaseAdmin
       .from("bookings")
       .select("id, excursion_id, tour_date, party_size, status, expires_at")
-      .in("excursion_id", (excursions ?? []).map((e) => e.id))
+      .in("excursion_id", (excursions ?? []).map((e) => e.id).concat("00000000-0000-0000-0000-000000000000"))
       .gte("tour_date", today)
       .in("status", ["reserved", "confirmed"]);
 
