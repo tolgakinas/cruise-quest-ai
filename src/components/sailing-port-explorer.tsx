@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Anchor, CheckCircle2, Clock, MapPin, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FreshnessInline, useRelativeTime } from "@/components/data-freshness";
 import { formatDate, formatDuration, formatMoney, hoursAshore, shortTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ export type PortCall = {
   arrival_time: string | null;
   departure_time: string | null;
   is_sea_day: boolean | null;
+  updated_at?: string | null;
   ports: Port;
 };
 
