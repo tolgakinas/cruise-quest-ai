@@ -22,6 +22,7 @@ import { Route as PortsSlugRouteImport } from './routes/ports.$slug'
 import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin/audit-log'
 import { Route as AuthenticatedBookingSlugRouteImport } from './routes/_authenticated/booking.$slug'
 import { Route as AuthenticatedBookingReturnRouteImport } from './routes/_authenticated/booking.return'
+import { Route as AuthenticatedAccountBookingsIndexRouteImport } from './routes/_authenticated/account.bookings.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -90,13 +91,19 @@ const AuthenticatedBookingReturnRoute =
     path: '/booking/return',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAccountBookingsIndexRoute =
+  AuthenticatedAccountBookingsIndexRouteImport.update({
+    id: '/bookings/',
+    path: '/bookings/',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/account': typeof AuthenticatedAccountRoute
+  '/account': typeof AuthenticatedAccountRouteWithChildren
   '/cruises/$slug': typeof CruisesSlugRoute
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
@@ -104,13 +111,14 @@ export interface FileRoutesByFullPath {
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/account/bookings/': typeof AuthenticatedAccountBookingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/account': typeof AuthenticatedAccountRoute
+  '/account': typeof AuthenticatedAccountRouteWithChildren
   '/cruises/$slug': typeof CruisesSlugRoute
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
@@ -118,6 +126,7 @@ export interface FileRoutesByTo {
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/account/bookings': typeof AuthenticatedAccountBookingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -126,7 +135,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/cruises/$slug': typeof CruisesSlugRoute
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
@@ -134,6 +143,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/_authenticated/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/_authenticated/account/bookings/': typeof AuthenticatedAccountBookingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/admin/audit-log'
     | '/booking/$slug'
     | '/booking/return'
+    | '/account/bookings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/admin/audit-log'
     | '/booking/$slug'
     | '/booking/return'
+    | '/account/bookings'
   id:
     | '__root__'
     | '/'
@@ -179,6 +191,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/audit-log'
     | '/_authenticated/booking/$slug'
     | '/_authenticated/booking/return'
+    | '/_authenticated/account/bookings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -286,18 +299,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingReturnRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/account/bookings/': {
+      id: '/_authenticated/account/bookings/'
+      path: '/bookings'
+      fullPath: '/account/bookings/'
+      preLoaderRoute: typeof AuthenticatedAccountBookingsIndexRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
   }
 }
 
+interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountBookingsIndexRoute: typeof AuthenticatedAccountBookingsIndexRoute
+}
+
+const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountBookingsIndexRoute:
+    AuthenticatedAccountBookingsIndexRoute,
+}
+
+const AuthenticatedAccountRouteWithChildren =
+  AuthenticatedAccountRoute._addFileChildren(AuthenticatedAccountRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRouteWithChildren
   AuthenticatedAdminAuditLogRoute: typeof AuthenticatedAdminAuditLogRoute
   AuthenticatedBookingSlugRoute: typeof AuthenticatedBookingSlugRoute
   AuthenticatedBookingReturnRoute: typeof AuthenticatedBookingReturnRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAccountRoute: AuthenticatedAccountRouteWithChildren,
   AuthenticatedAdminAuditLogRoute: AuthenticatedAdminAuditLogRoute,
   AuthenticatedBookingSlugRoute: AuthenticatedBookingSlugRoute,
   AuthenticatedBookingReturnRoute: AuthenticatedBookingReturnRoute,
