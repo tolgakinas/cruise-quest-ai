@@ -36,6 +36,8 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as AuthenticatedBookingSlugRouteImport } from './routes/_authenticated/booking.$slug'
 import { Route as AuthenticatedBookingReturnRouteImport } from './routes/_authenticated/booking.return'
 import { Route as ApiPublicImportCruisemapperRouteImport } from './routes/api/public/import-cruisemapper'
+import { Route as ApiPublicImportShoreexRouteImport } from './routes/api/public/import-shoreex'
+import { Route as ApiPublicImportShoreexCatalogRouteImport } from './routes/api/public/import-shoreex-catalog'
 import { Route as ApiPublicImportTimetablesRouteImport } from './routes/api/public/import-timetables'
 import { Route as AuthenticatedAccountBookingsIndexRouteImport } from './routes/_authenticated/account.bookings.index'
 import { Route as AuthenticatedAccountBookingsReferenceRouteImport } from './routes/_authenticated/account.bookings.$reference'
@@ -186,6 +188,17 @@ const ApiPublicImportCruisemapperRoute =
     path: '/api/public/import-cruisemapper',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicImportShoreexRoute = ApiPublicImportShoreexRouteImport.update({
+  id: '/api/public/import-shoreex',
+  path: '/api/public/import-shoreex',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicImportShoreexCatalogRoute =
+  ApiPublicImportShoreexCatalogRouteImport.update({
+    id: '/api/public/import-shoreex-catalog',
+    path: '/api/public/import-shoreex-catalog',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicImportTimetablesRoute =
   ApiPublicImportTimetablesRouteImport.update({
     id: '/api/public/import-timetables',
@@ -230,6 +243,8 @@ export interface FileRoutesByFullPath {
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
   '/api/public/import-cruisemapper': typeof ApiPublicImportCruisemapperRoute
+  '/api/public/import-shoreex': typeof ApiPublicImportShoreexRoute
+  '/api/public/import-shoreex-catalog': typeof ApiPublicImportShoreexCatalogRoute
   '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -259,6 +274,8 @@ export interface FileRoutesByTo {
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
   '/api/public/import-cruisemapper': typeof ApiPublicImportCruisemapperRoute
+  '/api/public/import-shoreex': typeof ApiPublicImportShoreexRoute
+  '/api/public/import-shoreex-catalog': typeof ApiPublicImportShoreexCatalogRoute
   '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -292,6 +309,8 @@ export interface FileRoutesById {
   '/_authenticated/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/_authenticated/booking/return': typeof AuthenticatedBookingReturnRoute
   '/api/public/import-cruisemapper': typeof ApiPublicImportCruisemapperRoute
+  '/api/public/import-shoreex': typeof ApiPublicImportShoreexRoute
+  '/api/public/import-shoreex-catalog': typeof ApiPublicImportShoreexCatalogRoute
   '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -325,6 +344,8 @@ export interface FileRouteTypes {
     | '/booking/$slug'
     | '/booking/return'
     | '/api/public/import-cruisemapper'
+    | '/api/public/import-shoreex'
+    | '/api/public/import-shoreex-catalog'
     | '/api/public/import-timetables'
     | '/account/'
     | '/admin/'
@@ -354,6 +375,8 @@ export interface FileRouteTypes {
     | '/booking/$slug'
     | '/booking/return'
     | '/api/public/import-cruisemapper'
+    | '/api/public/import-shoreex'
+    | '/api/public/import-shoreex-catalog'
     | '/api/public/import-timetables'
     | '/account'
     | '/admin'
@@ -386,6 +409,8 @@ export interface FileRouteTypes {
     | '/_authenticated/booking/$slug'
     | '/_authenticated/booking/return'
     | '/api/public/import-cruisemapper'
+    | '/api/public/import-shoreex'
+    | '/api/public/import-shoreex-catalog'
     | '/api/public/import-timetables'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
@@ -405,6 +430,8 @@ export interface RootRouteChildren {
   PortsSlugRoute: typeof PortsSlugRoute
   CruisesIndexRoute: typeof CruisesIndexRoute
   ApiPublicImportCruisemapperRoute: typeof ApiPublicImportCruisemapperRoute
+  ApiPublicImportShoreexRoute: typeof ApiPublicImportShoreexRoute
+  ApiPublicImportShoreexCatalogRoute: typeof ApiPublicImportShoreexCatalogRoute
   ApiPublicImportTimetablesRoute: typeof ApiPublicImportTimetablesRoute
 }
 
@@ -599,6 +626,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicImportCruisemapperRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/import-shoreex': {
+      id: '/api/public/import-shoreex'
+      path: '/api/public/import-shoreex'
+      fullPath: '/api/public/import-shoreex'
+      preLoaderRoute: typeof ApiPublicImportShoreexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/import-shoreex-catalog': {
+      id: '/api/public/import-shoreex-catalog'
+      path: '/api/public/import-shoreex-catalog'
+      fullPath: '/api/public/import-shoreex-catalog'
+      preLoaderRoute: typeof ApiPublicImportShoreexCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/import-timetables': {
       id: '/api/public/import-timetables'
       path: '/api/public/import-timetables'
@@ -703,6 +744,8 @@ const rootRouteChildren: RootRouteChildren = {
   PortsSlugRoute: PortsSlugRoute,
   CruisesIndexRoute: CruisesIndexRoute,
   ApiPublicImportCruisemapperRoute: ApiPublicImportCruisemapperRoute,
+  ApiPublicImportShoreexRoute: ApiPublicImportShoreexRoute,
+  ApiPublicImportShoreexCatalogRoute: ApiPublicImportShoreexCatalogRoute,
   ApiPublicImportTimetablesRoute: ApiPublicImportTimetablesRoute,
 }
 export const routeTree = rootRouteImport
