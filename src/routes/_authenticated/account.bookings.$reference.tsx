@@ -1,10 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
 import { cancelMyBooking, getMyBooking, modifyMyBooking } from "@/lib/booking.functions";
 import { createBookingCheckout } from "@/lib/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +30,6 @@ export const Route = createFileRoute("/_authenticated/account/bookings/$referenc
 
 function ManageBookingPage() {
   const { reference } = Route.useParams();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -48,6 +48,7 @@ function ManageBookingPage() {
     notes: "",
   });
   const [busy, setBusy] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   useEffect(() => {
     if (!booking) return;
@@ -151,7 +152,13 @@ function ManageBookingPage() {
       </p>
       <div className="rule-brass mt-6" />
 
-      {booking.status === "reserved" ? (
+      {clientSecret ? (
+        <div className="mt-8 rounded-lg border border-border p-4">
+          <EmbeddedCheckoutProvider stripe={getStripe()} options={{ clientSecret }}>
+            <EmbeddedCheckout />
+          </EmbeddedCheckoutProvider>
+        </div>
+      ) : booking.status === "reserved" ? (
         <div className="mt-8 rounded-lg border border-brass/40 bg-brass/10 p-5">
           <p className="text-sm">
             This reservation is not paid yet. Complete payment to secure your places.
