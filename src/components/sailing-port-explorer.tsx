@@ -202,7 +202,9 @@ export function SailingPortExplorer({
                           View & book
                         </Link>
                       </Button>
+                      </div>
                     </li>
+
                   );
                 })}
               </ul>
