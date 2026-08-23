@@ -34,6 +34,7 @@ import { Route as AuthenticatedAdminSailingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedBookingSlugRouteImport } from './routes/_authenticated/booking.$slug'
 import { Route as AuthenticatedBookingReturnRouteImport } from './routes/_authenticated/booking.return'
+import { Route as ApiPublicImportTimetablesRouteImport } from './routes/api/public/import-timetables'
 import { Route as AuthenticatedAccountBookingsIndexRouteImport } from './routes/_authenticated/account.bookings.index'
 import { Route as AuthenticatedAccountBookingsReferenceRouteImport } from './routes/_authenticated/account.bookings.$reference'
 
@@ -171,6 +172,12 @@ const AuthenticatedBookingReturnRoute =
     path: '/booking/return',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicImportTimetablesRoute =
+  ApiPublicImportTimetablesRouteImport.update({
+    id: '/api/public/import-timetables',
+    path: '/api/public/import-timetables',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAccountBookingsIndexRoute =
   AuthenticatedAccountBookingsIndexRouteImport.update({
     id: '/bookings/',
@@ -207,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
@@ -233,6 +241,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
@@ -263,6 +272,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/_authenticated/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/account/bookings/$reference': typeof AuthenticatedAccountBookingsReferenceRoute
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/booking/$slug'
     | '/booking/return'
+    | '/api/public/import-timetables'
     | '/account/'
     | '/admin/'
     | '/account/bookings/$reference'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/booking/$slug'
     | '/booking/return'
+    | '/api/public/import-timetables'
     | '/account'
     | '/admin'
     | '/account/bookings/$reference'
@@ -348,6 +360,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/booking/$slug'
     | '/_authenticated/booking/return'
+    | '/api/public/import-timetables'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
     | '/_authenticated/account/bookings/$reference'
@@ -365,6 +378,7 @@ export interface RootRouteChildren {
   ExcursionsSlugRoute: typeof ExcursionsSlugRoute
   PortsSlugRoute: typeof PortsSlugRoute
   CruisesIndexRoute: typeof CruisesIndexRoute
+  ApiPublicImportTimetablesRoute: typeof ApiPublicImportTimetablesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -544,6 +558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingReturnRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/import-timetables': {
+      id: '/api/public/import-timetables'
+      path: '/api/public/import-timetables'
+      fullPath: '/api/public/import-timetables'
+      preLoaderRoute: typeof ApiPublicImportTimetablesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/account/bookings/': {
       id: '/_authenticated/account/bookings/'
       path: '/bookings'
@@ -638,6 +659,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExcursionsSlugRoute: ExcursionsSlugRoute,
   PortsSlugRoute: PortsSlugRoute,
   CruisesIndexRoute: CruisesIndexRoute,
+  ApiPublicImportTimetablesRoute: ApiPublicImportTimetablesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
