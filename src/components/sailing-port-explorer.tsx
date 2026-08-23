@@ -124,6 +124,15 @@ export function SailingPortExplorer({
                   In port {shortTime(selected.arrival_time)} – {shortTime(selected.departure_time)}
                   {window ? ` · ${window.toFixed(1)} hours ashore` : ""}
                 </p>
+                {selectedUpdated ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Arrival &amp; departure times as of{" "}
+                    {selected.updated_at
+                      ? new Date(selected.updated_at).toLocaleString()
+                      : selectedUpdated}{" "}
+                    ({selectedUpdated})
+                  </p>
+                ) : null}
               </div>
               {selected.ports ? (
                 <Button asChild variant="outline" className="border-brass/50">
