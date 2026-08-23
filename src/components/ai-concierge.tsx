@@ -93,6 +93,28 @@ export function AiConcierge() {
             </button>
           </div>
 
+          <div className="grid grid-cols-2 border-b border-border text-xs">
+            {(["ask", "plan"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMode(tab)}
+                className={cn(
+                  "px-3 py-2 uppercase tracking-widest transition-colors",
+                  mode === tab
+                    ? "border-b-2 border-brass text-brass"
+                    : "text-muted-foreground hover:text-brass",
+                )}
+              >
+                {tab === "ask" ? "Ask" : "Plan my day"}
+              </button>
+            ))}
+          </div>
+
+          {mode === "plan" ? (
+            <ConciergePlanner onNavigate={() => setOpen(false)} />
+          ) : (
+            <>
           <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 text-sm">
             {turns.map((turn, index) => (
               <div key={index} className={turn.role === "user" ? "text-right" : ""}>
