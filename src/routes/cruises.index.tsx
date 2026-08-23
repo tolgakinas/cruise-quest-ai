@@ -100,6 +100,14 @@ function CruiseSearchPage() {
     enabled: !!selectedSlug,
   });
 
+  const selectSailing = useCallback((slug: string) => {
+    setSelectedSlug(slug);
+    requestAnimationFrame(() => {
+      const el = document.getElementById("selected-sailing");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
+
   const shipsForLine = (facets.data?.ships ?? []).filter((s) => {
     if (cruiseLine === ANY) return true;
     const line = (facets.data?.cruiseLines ?? []).find((l) => l.slug === cruiseLine);
