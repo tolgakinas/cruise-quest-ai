@@ -335,6 +335,11 @@ function CruiseSearchPage() {
                     </Link>
                   </Button>
                 </div>
+                <FreshnessBanner
+                  className="mt-5"
+                  updatedAt={detail.data.freshness?.updatedAt}
+                  source={detail.data.freshness?.source}
+                />
                 <div className="rule-brass mt-6 mb-10" />
                 <SailingPortExplorer
                   calls={detail.data.calls}
