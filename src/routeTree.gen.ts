@@ -21,6 +21,7 @@ import { Route as CruisesSlugRouteImport } from './routes/cruises.$slug'
 import { Route as ExcursionsSlugRouteImport } from './routes/excursions.$slug'
 import { Route as PortsSlugRouteImport } from './routes/ports.$slug'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account.index'
+import { Route as AuthenticatedAccountProfileRouteImport } from './routes/_authenticated/account.profile'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin/audit-log'
 import { Route as AuthenticatedAdminBookingsRouteImport } from './routes/_authenticated/admin/bookings'
@@ -92,6 +93,12 @@ const AuthenticatedAccountIndexRoute =
   AuthenticatedAccountIndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
+const AuthenticatedAccountProfileRoute =
+  AuthenticatedAccountProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
     getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -175,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises/': typeof CruisesIndexRoute
+  '/account/profile': typeof AuthenticatedAccountProfileRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/admin/excursions': typeof AuthenticatedAdminExcursionsRoute
@@ -198,6 +206,7 @@ export interface FileRoutesByTo {
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises': typeof CruisesIndexRoute
+  '/account/profile': typeof AuthenticatedAccountProfileRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/admin/excursions': typeof AuthenticatedAdminExcursionsRoute
@@ -225,6 +234,7 @@ export interface FileRoutesById {
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises/': typeof CruisesIndexRoute
+  '/_authenticated/account/profile': typeof AuthenticatedAccountProfileRoute
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/_authenticated/admin/excursions': typeof AuthenticatedAdminExcursionsRoute
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/excursions/$slug'
     | '/ports/$slug'
     | '/cruises/'
+    | '/account/profile'
     | '/admin/audit-log'
     | '/admin/bookings'
     | '/admin/excursions'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/excursions/$slug'
     | '/ports/$slug'
     | '/cruises'
+    | '/account/profile'
     | '/admin/audit-log'
     | '/admin/bookings'
     | '/admin/excursions'
@@ -301,6 +313,7 @@ export interface FileRouteTypes {
     | '/excursions/$slug'
     | '/ports/$slug'
     | '/cruises/'
+    | '/_authenticated/account/profile'
     | '/_authenticated/admin/audit-log'
     | '/_authenticated/admin/bookings'
     | '/_authenticated/admin/excursions'
@@ -412,6 +425,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/account/'
       preLoaderRoute: typeof AuthenticatedAccountIndexRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
+    '/_authenticated/account/profile': {
+      id: '/_authenticated/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AuthenticatedAccountProfileRouteImport
       parentRoute: typeof AuthenticatedAccountRoute
     }
     '/_authenticated/admin/': {
@@ -530,12 +550,14 @@ const AuthenticatedAdminRouteRouteWithChildren =
   )
 
 interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountProfileRoute: typeof AuthenticatedAccountProfileRoute
   AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
   AuthenticatedAccountBookingsReferenceRoute: typeof AuthenticatedAccountBookingsReferenceRoute
   AuthenticatedAccountBookingsIndexRoute: typeof AuthenticatedAccountBookingsIndexRoute
 }
 
 const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountProfileRoute: AuthenticatedAccountProfileRoute,
   AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,
   AuthenticatedAccountBookingsReferenceRoute:
     AuthenticatedAccountBookingsReferenceRoute,
