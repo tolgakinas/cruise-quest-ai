@@ -255,6 +255,7 @@ const ModifyInput = z.object({
   reference: z.string().min(3),
   partySize: z.number().int().min(1).max(20).optional(),
   portCallId: z.string().uuid().optional(),
+  excursionId: z.string().uuid().optional(),
   leadName: z.string().trim().min(2).max(120).optional(),
   leadEmail: z.string().trim().email().max(160).optional(),
   leadPhone: z.string().trim().max(40).optional(),
@@ -285,6 +286,35 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
     const changes: { field: string; old_value: string | null; new_value: string | null }[] = [];
     const update: Partial<Tables<"bookings">> = {};
 
+    // The guest may swap to another tour, as long as it is published. Price,
+    // capacity and the port match are always resolved from the target tour.
+    let targetExcursionId = booking.excursion_id;
+    let targetPortId = booking.excursions?.port_id ?? null;
+    let targetPrice = Number(booking.excursions?.price ?? 0);
+    let targetCapacity = booking.excursions?.capacity ?? 0;
+    let excursionChanged = false;
+
+    if (data.excursionId && data.excursionId !== booking.excursion_id) {
+      const { data: nextExcursion } = await supabase
+        .from("excursions")
+        .select("id, title, price, currency, capacity, port_id, is_published")
+        .eq("id", data.excursionId)
+        .maybeSingle();
+      if (!nextExcursion || !nextExcursion.is_published) {
+        throw new Error("That tour is not available.");
+      }
+      targetExcursionId = nextExcursion.id;
+      targetPortId = nextExcursion.port_id;
+      targetPrice = Number(nextExcursion.price);
+      targetCapacity = nextExcursion.capacity;
+      excursionChanged = true;
+      update["excursion_id"] = nextExcursion.id;
+      update["currency"] = nextExcursion.currency;
+      changes.push({ field: "excursion", old_value: booking.excursion_id, new_value: nextExcursion.id });
+      // Extras belong to the previous tour, so they are removed with the swap.
+      await supabase.from("booking_addons").delete().eq("booking_id", booking.id);
+    }
+
     let tourDate = booking.tour_date;
     if (data.portCallId && data.portCallId !== booking.port_call_id) {
       const { data: call } = await supabase
@@ -293,8 +323,8 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
         .eq("id", data.portCallId)
         .maybeSingle();
       if (!call) throw new Error("That date is no longer available.");
-      if (call.port_id !== booking.excursions?.port_id) {
-        throw new Error("That date is at a different port.");
+      if (call.port_id !== targetPortId) {
+        throw new Error("That date is at a different port than the chosen tour.");
       }
       if (call.call_date < new Date().toISOString().slice(0, 10)) {
         throw new Error("That date has already passed.");
@@ -316,12 +346,12 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
       update["party_size"] = data.partySize;
     }
 
-    if (update["tour_date"] || update["party_size"]) {
+    if (update["tour_date"] || update["party_size"] || excursionChanged) {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: taken } = await supabaseAdmin
         .from("bookings")
         .select("id, party_size, status, expires_at")
-        .eq("excursion_id", booking.excursion_id)
+        .eq("excursion_id", targetExcursionId)
         .eq("tour_date", tourDate)
         .in("status", ["reserved", "confirmed"]);
       const now = Date.now();
@@ -330,7 +360,7 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
         if (b.status === "reserved" && b.expires_at && new Date(b.expires_at).getTime() < now) return sum;
         return sum + b.party_size;
       }, 0);
-      const capacity = booking.excursions?.capacity ?? 0;
+      const capacity = targetCapacity;
       if (used + partySize > capacity) {
         throw new Error(`Only ${Math.max(0, capacity - used)} place(s) left on that date.`);
       }
@@ -351,7 +381,7 @@ export const modifyMyBooking = createServerFn({ method: "POST" })
             .eq("id", a.id);
         }
       }
-      update["total_amount"] = Number(booking.excursions?.price ?? 0) * partySize + addonTotal;
+      update["total_amount"] = targetPrice * partySize + addonTotal;
       changes.push({
         field: "total_amount",
         old_value: null,
@@ -452,4 +482,87 @@ export const cancelMyBooking = createServerFn({ method: "POST" })
     }
 
     return { ok: true, refundRequested };
+  });
+
+/**
+ * Signed in: everything the guest needs to move a reservation — the ports their
+ * sailing still calls at, the published tours in each port, and the remaining
+ * seats for every tour/date combination.
+ */
+export const getBookingChangeOptions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ reference: z.string().min(3) }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const today = new Date().toISOString().slice(0, 10);
+
+    const { data: booking } = await supabase
+      .from("bookings")
+      .select("id, user_id, sailing_id, excursion_id, port_call_id, party_size, excursions(port_id)")
+      .eq("reference", data.reference)
+      .maybeSingle();
+    if (!booking || booking.user_id !== userId) return null;
+
+    let callsQuery = supabase
+      .from("sailing_port_calls")
+      .select(
+        "id, call_date, arrival_time, departure_time, day_number, port_id, ports(id, name, slug, country), sailings(name, slug)",
+      )
+      .eq("is_sea_day", false)
+      .not("port_id", "is", null)
+      .gte("call_date", today)
+      .order("call_date");
+    callsQuery = booking.sailing_id
+      ? callsQuery.eq("sailing_id", booking.sailing_id)
+      : callsQuery.eq("port_id", booking.excursions?.port_id ?? "");
+
+    const { data: calls } = await callsQuery;
+    const portIds = [...new Set((calls ?? []).map((c) => c.port_id).filter(Boolean) as string[])];
+
+
+    const { data: excursions } = await supabase
+      .from("excursions")
+      .select("id, title, slug, price, currency, duration_minutes, capacity, category, port_id, image_url")
+      .in("port_id", portIds.length ? portIds : ["00000000-0000-0000-0000-000000000000"])
+      .eq("is_published", true)
+      .order("title");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: taken } = await supabaseAdmin
+      .from("bookings")
+      .select("id, excursion_id, tour_date, party_size, status, expires_at")
+      .in("excursion_id", (excursions ?? []).map((e) => e.id).concat("00000000-0000-0000-0000-000000000000"))
+      .gte("tour_date", today)
+      .in("status", ["reserved", "confirmed"]);
+
+    const now = Date.now();
+    const used = new Map<string, number>();
+    for (const b of taken ?? []) {
+      if (b.id === booking.id) continue;
+      if (b.status === "reserved" && b.expires_at && new Date(b.expires_at).getTime() < now) continue;
+      const key = `${b.excursion_id}|${b.tour_date}`;
+      used.set(key, (used.get(key) ?? 0) + b.party_size);
+    }
+
+    const seats: Record<string, number> = {};
+    for (const excursion of excursions ?? []) {
+      for (const call of calls ?? []) {
+        if (call.port_id !== excursion.port_id) continue;
+        const key = `${excursion.id}|${call.call_date}`;
+        seats[key] = Math.max(0, excursion.capacity - (used.get(key) ?? 0));
+      }
+    }
+
+    const ports = portIds
+      .map((id) => (calls ?? []).find((c) => c.port_id === id)?.ports)
+      .filter(Boolean) as { id: string; name: string; slug: string; country: string }[];
+
+    return {
+      ports,
+      calls: calls ?? [],
+      excursions: excursions ?? [],
+      seats,
+      currentExcursionId: booking.excursion_id,
+      currentPortCallId: booking.port_call_id,
+    };
   });

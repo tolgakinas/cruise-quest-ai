@@ -30,6 +30,24 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<"credentials" | "forgot">("credentials");
+  const [resetEmail, setResetEmail] = useState("");
+
+  const sendReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth/reset`,
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("We've sent you a password reset link. Check your inbox.");
+    setMode("credentials");
+  };
+
 
   const social = async (provider: "google" | "apple") => {
     const result = await lovable.auth.signInWithOAuth(provider, {
@@ -99,7 +117,38 @@ function AuthPage() {
         <span className="h-px flex-1 bg-border" /> or email <span className="h-px flex-1 bg-border" />
       </div>
 
+      {mode === "forgot" ? (
+        <form onSubmit={sendReset} className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Enter the email address on your account and we'll send you a secure link to choose a new
+            password.
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="reset-email">Email</Label>
+            <Input
+              id="reset-email"
+              type="email"
+              required
+              autoComplete="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={busy}>
+            Send reset link
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={() => setMode("credentials")}
+          >
+            Back to sign in
+          </Button>
+        </form>
+      ) : (
       <Tabs defaultValue="signin">
+
         <TabsList className="w-full">
           <TabsTrigger value="signin" className="flex-1">
             Sign in
@@ -128,7 +177,18 @@ function AuthPage() {
             <Button type="submit" className="w-full" disabled={busy}>
               Sign in
             </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setResetEmail(email);
+                setMode("forgot");
+              }}
+              className="w-full text-center text-xs text-muted-foreground underline hover:text-brass"
+            >
+              Forgot your password?
+            </button>
           </form>
+
         </TabsContent>
 
         <TabsContent value="signup">
@@ -158,6 +218,8 @@ function AuthPage() {
           </form>
         </TabsContent>
       </Tabs>
+      )}
+
     </div>
   );
 }
