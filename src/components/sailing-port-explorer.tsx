@@ -94,12 +94,15 @@ export function SailingPortExplorer({
                   </div>
                   <p className="mt-1 font-display text-lg">{isSea ? "At sea" : call.ports?.name}</p>
                   {!isSea ? (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {call.ports?.country}
-                      {call.arrival_time || call.departure_time
-                        ? ` · ${shortTime(call.arrival_time)} – ${shortTime(call.departure_time)}`
-                        : ""}
-                    </p>
+                    <>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {call.ports?.country}
+                        {call.arrival_time || call.departure_time
+                          ? ` · ${shortTime(call.arrival_time)} – ${shortTime(call.departure_time)}`
+                          : ""}
+                      </p>
+                      <FreshnessInline className="mt-1.5" updatedAt={call.updated_at} />
+                    </>
                   ) : null}
                 </button>
               </li>
