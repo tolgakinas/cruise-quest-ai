@@ -46,8 +46,16 @@ export const getExcursionOffer = createServerFn({ method: "POST" })
       seatsByDate.set(b.tour_date, (seatsByDate.get(b.tour_date) ?? 0) + b.party_size);
     }
 
+    const { data: addons } = await supabase
+      .from("excursion_addons")
+      .select("id, name, description, price, currency, per_guest, sort_order")
+      .eq("excursion_id", excursion.id)
+      .eq("is_active", true)
+      .order("sort_order");
+
     return {
       excursion,
+      addons: addons ?? [],
       dates: published.map((c) => ({
         portCallId: c.id,
         date: c.call_date,
