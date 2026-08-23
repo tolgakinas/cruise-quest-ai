@@ -132,7 +132,37 @@ export const reserveExcursion = createServerFn({ method: "POST" })
       );
     }
 
-    const total = Number(excursion.price) * data.partySize;
+    // Add-on prices are always taken from the database, never from the client.
+    const chosenAddons: {
+      addon_id: string;
+      name: string;
+      unit_price: number;
+      quantity: number;
+      line_total: number;
+      currency: string;
+    }[] = [];
+    if (data.addonIds.length) {
+      const { data: addons } = await supabase
+        .from("excursion_addons")
+        .select("id, name, price, currency, per_guest")
+        .eq("excursion_id", excursion.id)
+        .eq("is_active", true)
+        .in("id", [...new Set(data.addonIds)]);
+      for (const addon of addons ?? []) {
+        const quantity = addon.per_guest ? data.partySize : 1;
+        chosenAddons.push({
+          addon_id: addon.id,
+          name: addon.name,
+          unit_price: Number(addon.price),
+          quantity,
+          line_total: Number(addon.price) * quantity,
+          currency: addon.currency,
+        });
+      }
+    }
+
+    const addonTotal = chosenAddons.reduce((sum, a) => sum + a.line_total, 0);
+    const total = Number(excursion.price) * data.partySize + addonTotal;
 
     const { data: booking, error } = await supabase
       .from("bookings")
@@ -155,6 +185,12 @@ export const reserveExcursion = createServerFn({ method: "POST" })
       .select("id, reference, total_amount, currency, tour_date, party_size")
       .single();
     if (error) throw new Error(error.message);
+
+    if (chosenAddons.length) {
+      await supabase
+        .from("booking_addons")
+        .insert(chosenAddons.map((a) => ({ ...a, booking_id: booking.id })));
+    }
 
     return booking;
   });
