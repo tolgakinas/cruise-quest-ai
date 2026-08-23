@@ -36,7 +36,13 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const regionImages = [medImage, northImage, adriaticImage];
+function regionImage(region: string) {
+  const key = region.toLowerCase();
+  if (key.includes("north") || key.includes("baltic") || key.includes("fjord")) return northImage;
+  if (key.includes("adriatic") || key.includes("aegean") || key.includes("greek")) return adriaticImage;
+  return medImage;
+}
+
 
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("en-GB", {
