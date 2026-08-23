@@ -16,10 +16,10 @@ import {
 
 export const Route = createFileRoute("/cruises/")({
   validateSearch: (search?: Record<string, unknown>): {
-    line?: string;
-    ship?: string;
-    port?: string;
-    from?: string;
+    line?: string | undefined;
+    ship?: string | undefined;
+    port?: string | undefined;
+    from?: string | undefined;
   } => {
     const s = search ?? {};
     const str = (key: string) => (typeof s[key] === "string" ? (s[key] as string) : undefined);
