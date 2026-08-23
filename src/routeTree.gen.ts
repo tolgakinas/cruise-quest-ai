@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthResetRouteImport } from './routes/auth_.reset'
 import { Route as CruisesIndexRouteImport } from './routes/cruises.index'
 import { Route as CruisesSlugRouteImport } from './routes/cruises.$slug'
 import { Route as ExcursionsSlugRouteImport } from './routes/excursions.$slug'
@@ -68,6 +69,11 @@ const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthResetRoute = AuthResetRouteImport.update({
+  id: '/auth_/reset',
+  path: '/auth/reset',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CruisesIndexRoute = CruisesIndexRouteImport.update({
   id: '/cruises/',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/account': typeof AuthenticatedAccountRouteWithChildren
+  '/auth/reset': typeof AuthResetRoute
   '/cruises/$slug': typeof CruisesSlugRoute
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/auth/reset': typeof AuthResetRoute
   '/cruises/$slug': typeof CruisesSlugRoute
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
+  '/auth_/reset': typeof AuthResetRoute
   '/cruises/$slug': typeof CruisesSlugRoute
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/admin'
     | '/account'
+    | '/auth/reset'
     | '/cruises/$slug'
     | '/excursions/$slug'
     | '/ports/$slug'
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/contact'
+    | '/auth/reset'
     | '/cruises/$slug'
     | '/excursions/$slug'
     | '/ports/$slug'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/_authenticated/admin'
     | '/_authenticated/account'
+    | '/auth_/reset'
     | '/cruises/$slug'
     | '/excursions/$slug'
     | '/ports/$slug'
@@ -335,6 +347,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
+  AuthResetRoute: typeof AuthResetRoute
   CruisesSlugRoute: typeof CruisesSlugRoute
   ExcursionsSlugRoute: typeof ExcursionsSlugRoute
   PortsSlugRoute: typeof PortsSlugRoute
@@ -391,6 +404,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/auth_/reset': {
+      id: '/auth_/reset'
+      path: '/auth/reset'
+      fullPath: '/auth/reset'
+      preLoaderRoute: typeof AuthResetRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/cruises/': {
       id: '/cruises/'
@@ -591,6 +611,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
+  AuthResetRoute: AuthResetRoute,
   CruisesSlugRoute: CruisesSlugRoute,
   ExcursionsSlugRoute: ExcursionsSlugRoute,
   PortsSlugRoute: PortsSlugRoute,

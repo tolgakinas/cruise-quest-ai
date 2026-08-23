@@ -30,6 +30,24 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<"credentials" | "forgot">("credentials");
+  const [resetEmail, setResetEmail] = useState("");
+
+  const sendReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth/reset`,
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("We've sent you a password reset link. Check your inbox.");
+    setMode("credentials");
+  };
+
 
   const social = async (provider: "google" | "apple") => {
     const result = await lovable.auth.signInWithOAuth(provider, {
