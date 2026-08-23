@@ -112,6 +112,47 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_modifications: {
+        Row: {
+          booking_id: string
+          changed_by: string | null
+          created_at: string
+          field: string
+          id: string
+          new_value: string | null
+          note: string | null
+          old_value: string | null
+        }
+        Insert: {
+          booking_id: string
+          changed_by?: string | null
+          created_at?: string
+          field: string
+          id?: string
+          new_value?: string | null
+          note?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          booking_id?: string
+          changed_by?: string | null
+          created_at?: string
+          field?: string
+          id?: string
+          new_value?: string | null
+          note?: string | null
+          old_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_modifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           cabin_number: string | null
@@ -245,9 +286,11 @@ export type Database = {
           description: string | null
           difficulty: string | null
           duration_minutes: number
+          excludes: string[]
           external_id: string | null
           id: string
           image_url: string | null
+          includes: string[]
           is_published: boolean
           meeting_point: string | null
           port_id: string
@@ -257,6 +300,7 @@ export type Database = {
           summary: string | null
           title: string
           updated_at: string
+          wheelchair_accessible: boolean
         }
         Insert: {
           capacity?: number
@@ -266,9 +310,11 @@ export type Database = {
           description?: string | null
           difficulty?: string | null
           duration_minutes?: number
+          excludes?: string[]
           external_id?: string | null
           id?: string
           image_url?: string | null
+          includes?: string[]
           is_published?: boolean
           meeting_point?: string | null
           port_id: string
@@ -278,6 +324,7 @@ export type Database = {
           summary?: string | null
           title: string
           updated_at?: string
+          wheelchair_accessible?: boolean
         }
         Update: {
           capacity?: number
@@ -287,9 +334,11 @@ export type Database = {
           description?: string | null
           difficulty?: string | null
           duration_minutes?: number
+          excludes?: string[]
           external_id?: string | null
           id?: string
           image_url?: string | null
+          includes?: string[]
           is_published?: boolean
           meeting_point?: string | null
           port_id?: string
@@ -299,6 +348,7 @@ export type Database = {
           summary?: string | null
           title?: string
           updated_at?: string
+          wheelchair_accessible?: boolean
         }
         Relationships: [
           {
@@ -309,6 +359,92 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      import_runs: {
+        Row: {
+          error: string | null
+          finished_at: string | null
+          id: string
+          port_calls_created: number
+          port_calls_updated: number
+          sailings_created: number
+          sailings_updated: number
+          source_id: string | null
+          started_at: string
+          status: string
+          trigger: string
+        }
+        Insert: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          port_calls_created?: number
+          port_calls_updated?: number
+          sailings_created?: number
+          sailings_updated?: number
+          source_id?: string | null
+          started_at?: string
+          status?: string
+          trigger?: string
+        }
+        Update: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          port_calls_created?: number
+          port_calls_updated?: number
+          sailings_created?: number
+          sailings_updated?: number
+          source_id?: string | null
+          started_at?: string
+          status?: string
+          trigger?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_runs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "import_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_sources: {
+        Row: {
+          created_at: string
+          cruise_line_slug: string | null
+          id: string
+          is_active: boolean
+          label: string
+          last_run_at: string | null
+          parser: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          cruise_line_slug?: string | null
+          id?: string
+          is_active?: boolean
+          label: string
+          last_run_at?: string | null
+          parser?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          cruise_line_slug?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          last_run_at?: string | null
+          parser?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
       }
       payments: {
         Row: {
