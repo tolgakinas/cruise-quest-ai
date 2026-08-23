@@ -218,7 +218,9 @@ function ManageBookingPage() {
               className="mt-2"
             />
             <p className="mt-2 text-xs text-muted-foreground">
-              New total: {formatMoney(unitPrice * form.partySize, booking.currency)}
+              New total:{" "}
+              {formatMoney(unitPrice * form.partySize + extrasTotalForParty, booking.currency)}
+              {extras.length ? " (extras included)" : ""}
             </p>
           </div>
           <div>
