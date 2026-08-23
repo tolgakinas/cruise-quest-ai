@@ -177,7 +177,18 @@ function AuthPage() {
             <Button type="submit" className="w-full" disabled={busy}>
               Sign in
             </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setResetEmail(email);
+                setMode("forgot");
+              }}
+              className="w-full text-center text-xs text-muted-foreground underline hover:text-brass"
+            >
+              Forgot your password?
+            </button>
           </form>
+
         </TabsContent>
 
         <TabsContent value="signup">
