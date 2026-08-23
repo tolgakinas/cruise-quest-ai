@@ -38,7 +38,7 @@ export const Route = createFileRoute("/ports/$slug")({
     <div className="mx-auto max-w-3xl px-5 py-24 text-center">
       <h1 className="text-3xl">Port not found</h1>
       <Button asChild className="mt-6 bg-brass text-brass-foreground hover:bg-brass-soft">
-        <Link to="/cruises">Back to cruise search</Link>
+        <Link to="/cruises" search={{}}>Back to cruise search</Link>
       </Button>
     </div>
   ),

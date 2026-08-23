@@ -80,7 +80,7 @@ function BookingReturnPage() {
           <Link to="/account/bookings">My reservations</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/cruises">Find more excursions</Link>
+          <Link to="/cruises" search={{}}>Find more excursions</Link>
         </Button>
       </div>
     </div>
