@@ -14,8 +14,11 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CruisesRouteImport } from './routes/cruises'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as CruisesIndexRouteImport } from './routes/cruises.index'
+import { Route as CruisesSlugRouteImport } from './routes/cruises.$slug'
+import { Route as ExcursionsSlugRouteImport } from './routes/excursions.$slug'
+import { Route as PortsSlugRouteImport } from './routes/ports.$slug'
 import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin/audit-log'
 
 const IndexRoute = IndexRouteImport.update({
@@ -42,15 +45,30 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CruisesRoute = CruisesRouteImport.update({
-  id: '/cruises',
-  path: '/cruises',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const CruisesIndexRoute = CruisesIndexRouteImport.update({
+  id: '/cruises/',
+  path: '/cruises/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CruisesSlugRoute = CruisesSlugRouteImport.update({
+  id: '/cruises/$slug',
+  path: '/cruises/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExcursionsSlugRoute = ExcursionsSlugRouteImport.update({
+  id: '/excursions/$slug',
+  path: '/excursions/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortsSlugRoute = PortsSlugRouteImport.update({
+  id: '/ports/$slug',
+  path: '/ports/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminAuditLogRoute =
   AuthenticatedAdminAuditLogRouteImport.update({
@@ -64,8 +82,11 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/cruises': typeof CruisesRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/cruises/$slug': typeof CruisesSlugRoute
+  '/excursions/$slug': typeof ExcursionsSlugRoute
+  '/ports/$slug': typeof PortsSlugRoute
+  '/cruises/': typeof CruisesIndexRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
 }
 export interface FileRoutesByTo {
@@ -73,8 +94,11 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/cruises': typeof CruisesRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/cruises/$slug': typeof CruisesSlugRoute
+  '/excursions/$slug': typeof ExcursionsSlugRoute
+  '/ports/$slug': typeof PortsSlugRoute
+  '/cruises': typeof CruisesIndexRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
 }
 export interface FileRoutesById {
@@ -84,8 +108,11 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/cruises': typeof CruisesRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/cruises/$slug': typeof CruisesSlugRoute
+  '/excursions/$slug': typeof ExcursionsSlugRoute
+  '/ports/$slug': typeof PortsSlugRoute
+  '/cruises/': typeof CruisesIndexRoute
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
 }
 export interface FileRouteTypes {
@@ -95,8 +122,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/contact'
-    | '/cruises'
     | '/account'
+    | '/cruises/$slug'
+    | '/excursions/$slug'
+    | '/ports/$slug'
+    | '/cruises/'
     | '/admin/audit-log'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -104,8 +134,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/contact'
-    | '/cruises'
     | '/account'
+    | '/cruises/$slug'
+    | '/excursions/$slug'
+    | '/ports/$slug'
+    | '/cruises'
     | '/admin/audit-log'
   id:
     | '__root__'
@@ -114,8 +147,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/contact'
-    | '/cruises'
     | '/_authenticated/account'
+    | '/cruises/$slug'
+    | '/excursions/$slug'
+    | '/ports/$slug'
+    | '/cruises/'
     | '/_authenticated/admin/audit-log'
   fileRoutesById: FileRoutesById
 }
@@ -125,7 +161,10 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
-  CruisesRoute: typeof CruisesRoute
+  CruisesSlugRoute: typeof CruisesSlugRoute
+  ExcursionsSlugRoute: typeof ExcursionsSlugRoute
+  PortsSlugRoute: typeof PortsSlugRoute
+  CruisesIndexRoute: typeof CruisesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,19 +204,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cruises': {
-      id: '/cruises'
-      path: '/cruises'
-      fullPath: '/cruises'
-      preLoaderRoute: typeof CruisesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/cruises/': {
+      id: '/cruises/'
+      path: '/cruises'
+      fullPath: '/cruises/'
+      preLoaderRoute: typeof CruisesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cruises/$slug': {
+      id: '/cruises/$slug'
+      path: '/cruises/$slug'
+      fullPath: '/cruises/$slug'
+      preLoaderRoute: typeof CruisesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/excursions/$slug': {
+      id: '/excursions/$slug'
+      path: '/excursions/$slug'
+      fullPath: '/excursions/$slug'
+      preLoaderRoute: typeof ExcursionsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ports/$slug': {
+      id: '/ports/$slug'
+      path: '/ports/$slug'
+      fullPath: '/ports/$slug'
+      preLoaderRoute: typeof PortsSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/audit-log': {
       id: '/_authenticated/admin/audit-log'
@@ -208,7 +268,10 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
-  CruisesRoute: CruisesRoute,
+  CruisesSlugRoute: CruisesSlugRoute,
+  ExcursionsSlugRoute: ExcursionsSlugRoute,
+  PortsSlugRoute: PortsSlugRoute,
+  CruisesIndexRoute: CruisesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
