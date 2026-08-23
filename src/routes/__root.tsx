@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Toaster } from "@/components/ui/sonner";
+import { AiConcierge } from "@/components/ai-concierge";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -151,6 +152,7 @@ function RootComponent() {
         </main>
         <SiteFooter />
       </div>
+      <AiConcierge />
       <Toaster />
     </QueryClientProvider>
   );
