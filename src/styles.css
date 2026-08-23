@@ -51,8 +51,13 @@
   --color-brass: var(--brass);
   --color-brass-soft: var(--brass-soft);
   --color-brass-foreground: var(--brass-foreground);
+  --color-aqua: var(--aqua);
+  --color-aqua-soft: var(--aqua-soft);
+  --color-aqua-deep: var(--aqua-deep);
+  --color-aqua-foreground: var(--aqua-foreground);
   --color-sea: var(--sea);
   --color-ivory: var(--ivory);
+
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
