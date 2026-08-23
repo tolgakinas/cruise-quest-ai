@@ -124,6 +124,7 @@ export const getPort = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ slug: z.string() }).parse(input))
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
+    const today = new Date().toISOString().slice(0, 10);
     const { data: port } = await supabase
       .from("ports")
       .select("id, name, slug, country, region, description")
@@ -146,6 +147,7 @@ export const getPort = createServerFn({ method: "POST" })
           "id, day_number, call_date, arrival_time, departure_time, updated_at, sailings!inner(id, name, slug, region, is_published, source, updated_at)",
         )
         .eq("port_id", port.id)
+        .gte("call_date", today)
         .order("call_date"),
     ]);
 
