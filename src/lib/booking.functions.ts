@@ -217,27 +217,38 @@ export const getMyBooking = createServerFn({ method: "POST" })
     const { data: booking, error } = await context.supabase
       .from("bookings")
       .select(
-        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, lead_passenger_phone, cabin_number, notes, port_call_id, created_at, excursion_id, excursions(id, title, slug, price, currency, capacity, duration_minutes, meeting_point, port_id, ports(name, country, slug)), sailings(name, slug)",
+        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, lead_passenger_phone, cabin_number, notes, port_call_id, created_at, excursion_id, excursions(id, title, slug, price, currency, capacity, duration_minutes, meeting_point, port_id, ports(name, country, slug)), sailings(name, slug), booking_addons(id, name, quantity, unit_price, line_total, currency)",
       )
       .eq("reference", data.reference)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!booking) return null;
 
-    const { data: history } = await context.supabase
-      .from("booking_modifications")
-      .select("id, field, old_value, new_value, note, created_at")
-      .eq("booking_id", booking.id)
-      .order("created_at", { ascending: false });
+    const [{ data: history }, { data: calls }, { data: refunds }] = await Promise.all([
+      context.supabase
+        .from("booking_modifications")
+        .select("id, field, old_value, new_value, note, created_at")
+        .eq("booking_id", booking.id)
+        .order("created_at", { ascending: false }),
+      context.supabase
+        .from("sailing_port_calls")
+        .select("id, call_date, arrival_time, departure_time, sailings!inner(name, slug)")
+        .eq("port_id", booking.excursions?.port_id ?? "")
+        .gte("call_date", new Date().toISOString().slice(0, 10))
+        .order("call_date"),
+      context.supabase
+        .from("refund_requests")
+        .select("id, status, reason, amount, currency, admin_note, created_at, reviewed_at")
+        .eq("booking_id", booking.id)
+        .order("created_at", { ascending: false }),
+    ]);
 
-    const { data: calls } = await context.supabase
-      .from("sailing_port_calls")
-      .select("id, call_date, arrival_time, departure_time, sailings!inner(name, slug)")
-      .eq("port_id", booking.excursions?.port_id ?? "")
-      .gte("call_date", new Date().toISOString().slice(0, 10))
-      .order("call_date");
-
-    return { booking, history: history ?? [], alternatives: calls ?? [] };
+    return {
+      booking,
+      history: history ?? [],
+      alternatives: calls ?? [],
+      refundRequests: refunds ?? [],
+    };
   });
 
 const ModifyInput = z.object({
