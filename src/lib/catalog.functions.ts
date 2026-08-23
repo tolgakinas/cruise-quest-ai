@@ -136,7 +136,7 @@ export const getPort = createServerFn({ method: "POST" })
       supabase
         .from("sailing_port_calls")
         .select(
-          "id, day_number, call_date, arrival_time, departure_time, sailings!inner(id, name, slug, region, is_published)",
+          "id, day_number, call_date, arrival_time, departure_time, updated_at, sailings!inner(id, name, slug, region, is_published, source, updated_at)",
         )
         .eq("port_id", port.id)
         .order("call_date"),
