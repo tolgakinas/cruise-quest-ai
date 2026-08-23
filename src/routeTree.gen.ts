@@ -35,6 +35,7 @@ import { Route as AuthenticatedAdminSailingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedBookingSlugRouteImport } from './routes/_authenticated/booking.$slug'
 import { Route as AuthenticatedBookingReturnRouteImport } from './routes/_authenticated/booking.return'
+import { Route as ApiPublicImportCruisemapperRouteImport } from './routes/api/public/import-cruisemapper'
 import { Route as ApiPublicImportTimetablesRouteImport } from './routes/api/public/import-timetables'
 import { Route as AuthenticatedAccountBookingsIndexRouteImport } from './routes/_authenticated/account.bookings.index'
 import { Route as AuthenticatedAccountBookingsReferenceRouteImport } from './routes/_authenticated/account.bookings.$reference'
@@ -179,6 +180,12 @@ const AuthenticatedBookingReturnRoute =
     path: '/booking/return',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicImportCruisemapperRoute =
+  ApiPublicImportCruisemapperRouteImport.update({
+    id: '/api/public/import-cruisemapper',
+    path: '/api/public/import-cruisemapper',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicImportTimetablesRoute =
   ApiPublicImportTimetablesRouteImport.update({
     id: '/api/public/import-timetables',
@@ -222,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/api/public/import-cruisemapper': typeof ApiPublicImportCruisemapperRoute
   '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -250,6 +258,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/api/public/import-cruisemapper': typeof ApiPublicImportCruisemapperRoute
   '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -282,6 +291,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/booking/$slug': typeof AuthenticatedBookingSlugRoute
   '/_authenticated/booking/return': typeof AuthenticatedBookingReturnRoute
+  '/api/public/import-cruisemapper': typeof ApiPublicImportCruisemapperRoute
   '/api/public/import-timetables': typeof ApiPublicImportTimetablesRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/booking/$slug'
     | '/booking/return'
+    | '/api/public/import-cruisemapper'
     | '/api/public/import-timetables'
     | '/account/'
     | '/admin/'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/booking/$slug'
     | '/booking/return'
+    | '/api/public/import-cruisemapper'
     | '/api/public/import-timetables'
     | '/account'
     | '/admin'
@@ -373,6 +385,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/booking/$slug'
     | '/_authenticated/booking/return'
+    | '/api/public/import-cruisemapper'
     | '/api/public/import-timetables'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
@@ -391,6 +404,7 @@ export interface RootRouteChildren {
   ExcursionsSlugRoute: typeof ExcursionsSlugRoute
   PortsSlugRoute: typeof PortsSlugRoute
   CruisesIndexRoute: typeof CruisesIndexRoute
+  ApiPublicImportCruisemapperRoute: typeof ApiPublicImportCruisemapperRoute
   ApiPublicImportTimetablesRoute: typeof ApiPublicImportTimetablesRoute
 }
 
@@ -578,6 +592,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingReturnRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/import-cruisemapper': {
+      id: '/api/public/import-cruisemapper'
+      path: '/api/public/import-cruisemapper'
+      fullPath: '/api/public/import-cruisemapper'
+      preLoaderRoute: typeof ApiPublicImportCruisemapperRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/import-timetables': {
       id: '/api/public/import-timetables'
       path: '/api/public/import-timetables'
@@ -681,6 +702,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExcursionsSlugRoute: ExcursionsSlugRoute,
   PortsSlugRoute: PortsSlugRoute,
   CruisesIndexRoute: CruisesIndexRoute,
+  ApiPublicImportCruisemapperRoute: ApiPublicImportCruisemapperRoute,
   ApiPublicImportTimetablesRoute: ApiPublicImportTimetablesRoute,
 }
 export const routeTree = rootRouteImport
