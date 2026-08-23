@@ -519,7 +519,6 @@ export const getBookingChangeOptions = createServerFn({ method: "POST" })
     const { data: calls } = await callsQuery;
     const portIds = [...new Set((calls ?? []).map((c) => c.port_id).filter(Boolean) as string[])];
 
-    }
 
     const { data: excursions } = await supabase
       .from("excursions")
