@@ -202,7 +202,7 @@ export const getMyBookings = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("bookings")
       .select(
-        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, cabin_number, created_at, excursions(id, title, slug, duration_minutes, meeting_point, ports(name, country, slug)), sailings(name, slug), payments(status, amount, currency, created_at)",
+        "id, reference, tour_date, party_size, total_amount, currency, status, lead_passenger_name, lead_passenger_email, cabin_number, created_at, excursions(id, title, slug, duration_minutes, meeting_point, ports(name, country, slug)), sailings(name, slug), payments(status, amount, currency, created_at), booking_addons(id, name, quantity, unit_price, line_total, currency), refund_requests(id, status, created_at)",
       )
       .order("tour_date", { ascending: true });
     if (error) throw new Error(error.message);
