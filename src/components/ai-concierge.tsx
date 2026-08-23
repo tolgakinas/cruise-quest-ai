@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Anchor, SendHorizonal, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { askConcierge, askConciergeAsGuest } from "@/lib/concierge.functions";
+import { ConciergePlanner } from "@/components/concierge-planner";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 type Turn = {
   role: "user" | "assistant";
