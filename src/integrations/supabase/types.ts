@@ -1038,6 +1038,50 @@ export type Database = {
           },
         ]
       }
+      shoreex_itinerary_queue: {
+        Row: {
+          attempts: number
+          created_at: string
+          fetched_at: string | null
+          id: string
+          last_error: string | null
+          sailing_id: string
+          status: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          fetched_at?: string | null
+          id?: string
+          last_error?: string | null
+          sailing_id: string
+          status?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          fetched_at?: string | null
+          id?: string
+          last_error?: string | null
+          sailing_id?: string
+          status?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shoreex_itinerary_queue_sailing_id_fkey"
+            columns: ["sailing_id"]
+            isOneToOne: true
+            referencedRelation: "sailings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
