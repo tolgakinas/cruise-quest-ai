@@ -269,7 +269,21 @@ function SailingPage() {
           </div>
         </div>
       </section>
+
+      <section className="border-t border-brass/20 bg-ivory/40">
+        <div className="mx-auto max-w-4xl px-5 py-14">
+          <p className="eyebrow text-brass">Port-by-port</p>
+          <h2 className="mt-2 text-3xl">Full itinerary timeline</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Every day of {sailing.name}, with scheduled arrival and departure times and how long
+            you have ashore.
+          </p>
+          <div className="rule-brass mt-5" />
+          <SailingTimeline className="mt-8" calls={calls} />
+        </div>
+      </section>
     </div>
+
   );
 }
 
