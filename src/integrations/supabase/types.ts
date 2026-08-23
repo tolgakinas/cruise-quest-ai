@@ -112,6 +112,57 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_addons: {
+        Row: {
+          addon_id: string | null
+          booking_id: string
+          created_at: string
+          currency: string
+          id: string
+          line_total: number
+          name: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          addon_id?: string | null
+          booking_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          line_total: number
+          name: string
+          quantity?: number
+          unit_price: number
+        }
+        Update: {
+          addon_id?: string | null
+          booking_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          line_total?: number
+          name?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_addons_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "excursion_addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_addons_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_modifications: {
         Row: {
           booking_id: string
@@ -276,6 +327,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      excursion_addons: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          excursion_id: string
+          id: string
+          is_active: boolean
+          name: string
+          per_guest: boolean
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          excursion_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          per_guest?: boolean
+          price: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          excursion_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          per_guest?: boolean
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "excursion_addons_excursion_id_fkey"
+            columns: ["excursion_id"]
+            isOneToOne: false
+            referencedRelation: "excursions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       excursions: {
         Row: {
@@ -576,6 +677,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      refund_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number | null
+          booking_id: string
+          created_at: string
+          currency: string
+          id: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount?: number | null
+          booking_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number | null
+          booking_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_requests_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sailing_port_calls: {
         Row: {
