@@ -21,6 +21,7 @@ import { Route as CruisesIndexRouteImport } from './routes/cruises.index'
 import { Route as CruisesSlugRouteImport } from './routes/cruises.$slug'
 import { Route as ExcursionsSlugRouteImport } from './routes/excursions.$slug'
 import { Route as PortsSlugRouteImport } from './routes/ports.$slug'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account.index'
 import { Route as AuthenticatedAccountProfileRouteImport } from './routes/_authenticated/account.profile'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
@@ -99,6 +100,11 @@ const ExcursionsSlugRoute = ExcursionsSlugRouteImport.update({
 const PortsSlugRoute = PortsSlugRouteImport.update({
   id: '/ports/$slug',
   path: '/ports/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAccountIndexRoute =
@@ -230,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises/': typeof CruisesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises': typeof CruisesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/excursions/$slug': typeof ExcursionsSlugRoute
   '/ports/$slug': typeof PortsSlugRoute
   '/cruises/': typeof CruisesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/account/profile': typeof AuthenticatedAccountProfileRoute
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/admin/bookings': typeof AuthenticatedAdminBookingsRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/excursions/$slug'
     | '/ports/$slug'
     | '/cruises/'
+    | '/.lovable/oauth/consent'
     | '/account/profile'
     | '/admin/audit-log'
     | '/admin/bookings'
@@ -362,6 +372,7 @@ export interface FileRouteTypes {
     | '/excursions/$slug'
     | '/ports/$slug'
     | '/cruises'
+    | '/.lovable/oauth/consent'
     | '/account/profile'
     | '/admin/audit-log'
     | '/admin/bookings'
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '/excursions/$slug'
     | '/ports/$slug'
     | '/cruises/'
+    | '/.lovable/oauth/consent'
     | '/_authenticated/account/profile'
     | '/_authenticated/admin/audit-log'
     | '/_authenticated/admin/bookings'
@@ -429,6 +441,7 @@ export interface RootRouteChildren {
   ExcursionsSlugRoute: typeof ExcursionsSlugRoute
   PortsSlugRoute: typeof PortsSlugRoute
   CruisesIndexRoute: typeof CruisesIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicImportCruisemapperRoute: typeof ApiPublicImportCruisemapperRoute
   ApiPublicImportShoreexRoute: typeof ApiPublicImportShoreexRoute
   ApiPublicImportShoreexCatalogRoute: typeof ApiPublicImportShoreexCatalogRoute
@@ -519,6 +532,13 @@ declare module '@tanstack/react-router' {
       path: '/ports/$slug'
       fullPath: '/ports/$slug'
       preLoaderRoute: typeof PortsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account/': {
@@ -743,6 +763,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExcursionsSlugRoute: ExcursionsSlugRoute,
   PortsSlugRoute: PortsSlugRoute,
   CruisesIndexRoute: CruisesIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicImportCruisemapperRoute: ApiPublicImportCruisemapperRoute,
   ApiPublicImportShoreexRoute: ApiPublicImportShoreexRoute,
   ApiPublicImportShoreexCatalogRoute: ApiPublicImportShoreexCatalogRoute,
