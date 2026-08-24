@@ -276,7 +276,7 @@ function CruiseSearchPage() {
                         <h3 className="mt-2 text-2xl">
                           <button
                             type="button"
-                            onClick={() => setSelectedSlug(s.slug)}
+                            onClick={() => selectSailing(s.slug)}
                             className="text-left hover:text-brass"
                           >
                             {s.name}
@@ -294,7 +294,7 @@ function CruiseSearchPage() {
                         </div>
                       </div>
                       <Button
-                        onClick={() => setSelectedSlug(s.slug)}
+                        onClick={() => selectSailing(s.slug)}
                         variant={active ? "outline" : "default"}
                         className={
                           active
