@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Anchor, CalendarDays, Ship, Search } from "lucide-react";
 import { getSailing, getSearchFacets, searchSailings } from "@/lib/catalog.functions";
 import { SailingPortExplorer } from "@/components/sailing-port-explorer";
