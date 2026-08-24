@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "sdk_version": "0.27.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://lrgebuznikcieufbeniu.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "shore-hopper",
+      "version": "0.1.0",
+      "title": "Shore Hopper"
+    },
+    "tools": [
+      {
+        "name": "search_sailings",
+        "title": "Search cruise sailings",
+        "description": "Search upcoming published cruise sailings by ship name, cruise line, region, or departure date window. Returns sailing slugs to use with get_sailing_itinerary.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Free text matched against sailing or ship name.",
+              "type": "string"
+            },
+            "region": {
+              "description": "Region name, e.g. Mediterranean.",
+              "type": "string"
+            },
+            "departure_from": {
+              "description": "Earliest departure date (YYYY-MM-DD).",
+              "type": "string"
+            },
+            "departure_to": {
+              "description": "Latest departure date (YYYY-MM-DD).",
+              "type": "string"
+            },
+            "limit": {
+              "default": 15,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_sailing_itinerary",
+        "title": "Get sailing itinerary",
+        "description": "Return the port-by-port itinerary for one sailing (by slug), including day numbers, call dates, arrival and departure times, and sea days.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Sailing slug from search_sailings."
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_port_excursions",
+        "title": "List shore excursions in a port",
+        "description": "List published Shore Hopper shore excursions available in a port (by port slug or name), with price, duration, category and meeting point.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "port": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Port slug or name, e.g. istanbul."
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "port"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_bookings",
+        "title": "List my excursion bookings",
+        "description": "List the signed-in passenger's own shore excursion bookings with reference, status, tour date, party size and total price.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "status": {
+              "description": "Optional booking status filter.",
+              "type": "string",
+              "enum": [
+                "pending",
+                "confirmed",
+                "cancelled",
+                "completed",
+                "refunded"
+              ]
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
