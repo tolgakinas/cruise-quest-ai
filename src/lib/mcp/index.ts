@@ -1,5 +1,4 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
-import type { AnyToolDefinition } from "@lovable.dev/mcp-js";
 import searchSailingsTool from "./tools/search-sailings";
 import getSailingItineraryTool from "./tools/get-sailing-itinerary";
 import listPortExcursionsTool from "./tools/list-port-excursions";
@@ -24,5 +23,5 @@ export default defineMcp({
     getSailingItineraryTool,
     listPortExcursionsTool,
     listMyBookingsTool,
-  ] as unknown as AnyToolDefinition[],
+  ] as unknown as Parameters<typeof defineMcp>[0]["tools"],
 });
