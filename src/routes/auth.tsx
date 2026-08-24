@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s['next'] === "string" && (s['next'] as string).startsWith("/") ? (s['next'] as string) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign In — Shore Hopper" },
@@ -26,6 +29,15 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const returnTo = () => (next ? `${window.location.origin}${next}` : window.location.origin);
+  const goHome = () => {
+    if (next) {
+      window.location.href = `${window.location.origin}${next}`;
+      return;
+    }
+    navigate({ to: "/account" });
+  };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -51,14 +63,14 @@ function AuthPage() {
 
   const social = async (provider: "google" | "apple") => {
     const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin,
+      redirect_uri: returnTo(),
     });
     if (result.error) {
       toast.error("Sign-in failed. Please try again.");
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/account" });
+    goHome();
   };
 
   const signIn = async (e: React.FormEvent) => {
@@ -70,7 +82,7 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    navigate({ to: "/account" });
+    goHome();
   };
 
   const signUp = async (e: React.FormEvent) => {
@@ -79,7 +91,7 @@ function AuthPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin, data: { full_name: fullName } },
+      options: { emailRedirectTo: returnTo(), data: { full_name: fullName } },
     });
     setBusy(false);
     if (error) {
@@ -90,7 +102,7 @@ function AuthPage() {
       toast.success("Check your email to confirm your account.");
       return;
     }
-    navigate({ to: "/account" });
+    goHome();
   };
 
   return (
