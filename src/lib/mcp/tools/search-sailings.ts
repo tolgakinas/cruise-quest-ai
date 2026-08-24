@@ -35,7 +35,10 @@ export default defineTool({
     const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
 
-    const sailings = (data ?? []).map((s) => ({
+    const sailings = (data ?? []).map((s) => {
+      const raw = s as unknown as { ships?: any };
+      const ship = Array.isArray(raw.ships) ? raw.ships[0] : raw.ships;
+      return {
       name: s.name,
       slug: s.slug,
       region: s.region,
@@ -43,9 +46,10 @@ export default defineTool({
       arrival_date: s.arrival_date,
       nights: s.nights,
       starting_price: s.starting_price,
-      ship: s.ships?.name ?? null,
-      cruise_line: s.ships?.cruise_lines?.name ?? null,
-    }));
+      ship: ship?.name ?? null,
+      cruise_line: ship?.cruise_lines?.[0]?.name ?? ship?.cruise_lines?.name ?? null,
+      };
+    });
 
     return {
       content: [{ type: "text", text: JSON.stringify(sailings, null, 2) }],
