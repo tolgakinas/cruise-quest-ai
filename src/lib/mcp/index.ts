@@ -1,4 +1,5 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
+import type { AnyToolDefinition } from "@lovable.dev/mcp-js";
 import searchSailingsTool from "./tools/search-sailings";
 import getSailingItineraryTool from "./tools/get-sailing-itinerary";
 import listPortExcursionsTool from "./tools/list-port-excursions";
@@ -18,5 +19,10 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [searchSailingsTool, getSailingItineraryTool, listPortExcursionsTool, listMyBookingsTool],
+  tools: [
+    searchSailingsTool,
+    getSailingItineraryTool,
+    listPortExcursionsTool,
+    listMyBookingsTool,
+  ] as unknown as AnyToolDefinition[],
 });
