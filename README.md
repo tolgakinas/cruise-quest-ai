@@ -1,14 +1,18 @@
-# Welcome to your Lovable project
+# Shore Hopper
+
+i want you start a new project called Shore Hopper. It will be a webapp where the cruise passengers can track and find the cruises regarding to route, ports, cruise company and ship name and dates as well. When they find the regarding cruise, they can see the ports, arrival and departure times and they can see the tours or excursions depends on the port cities. they can book and pay. there should be a window wehere AI embeded and passengers may ask any questions about the services they want to get. there should be passenger and admin panels. they can sign up with any way like google, emails or apple. you can use your own database. let me know what you need anything any time
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://cruise-quest-ai.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/98d9af66-ff87-4520-aec6-519e078bf601).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +24,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
